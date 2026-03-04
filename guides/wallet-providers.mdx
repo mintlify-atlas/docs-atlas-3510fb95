@@ -1,0 +1,436 @@
+---
+title: Wallet providers overview
+description: Compare all 8 wallet providers and choose the right one for your dApp
+icon: wallet
+---
+
+Create-nextjs-dapp supports 8 different wallet providers across EVM and Solana blockchains. This guide helps you understand the differences and choose the right provider for your project.
+
+## Quick comparison
+
+<Note>
+Providers are listed in the recommended order within each category. The first option for each blockchain is the most popular choice.
+</Note>
+
+### EVM providers
+
+| Provider | Best for | Key features | Chains |
+|----------|----------|--------------|--------|
+| **RainbowKit** | Most dApps | Beautiful UX, extensive wallet support, highly customizable | EVM |
+| **ConnectKit** | Design-focused apps | Customizable UI, smooth animations, modern design | EVM |
+| **Privy** | Onboarding new users | Email/social login, embedded wallets, SMS auth | EVM, Solana |
+| **Dynamic** | Multi-chain apps | Multi-chain support, embedded wallets, fiat onramps | EVM, Solana |
+| **Reown (AppKit)** | WalletConnect users | Official WalletConnect SDK, cross-platform | EVM, Solana |
+| **Thirdweb** | Full-stack projects | Backend SDKs, smart contracts, analytics | EVM, Solana |
+| **GetPara (Capsule)** | Enterprise apps | MPC wallets, email auth, recovery options | EVM |
+
+### Solana providers
+
+| Provider | Best for | Key features |
+|----------|----------|-------------|
+| **Wallet Adapter** | Pure Solana dApps | Standard Solana wallet support, lightweight |
+| **Privy** | Onboarding new users | Email/social login, embedded wallets |
+| **Dynamic** | Multi-chain apps | EVM + Solana support, fiat onramps |
+| **Reown (AppKit)** | WalletConnect users | Official WalletConnect SDK |
+| **Thirdweb** | Full-stack projects | Backend SDKs, analytics |
+
+## Detailed provider profiles
+
+### RainbowKit (EVM)
+
+<Card title="RainbowKit" icon="rainbow">
+  Best UX for connecting wallets (recommended for most EVM projects)
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+rainbowkit: {
+  name: "RainbowKit",
+  description: "Best UX for connecting wallets (recommended)",
+  chains: ["evm"],
+}
+```
+
+**Strengths:**
+- Beautiful, polished UI out of the box
+- Supports 100+ wallets automatically
+- Extensive theming and customization
+- Built on top of Wagmi (industry standard)
+- Active maintenance by Rainbow team
+
+**Best for:**
+- General-purpose dApps
+- Projects prioritizing user experience
+- Apps needing wide wallet compatibility
+
+**When to avoid:**
+- Need social logins (use Privy/Dynamic)
+- Solana support required
+- Need embedded wallets for non-crypto users
+
+### ConnectKit (EVM)
+
+<Card title="ConnectKit" icon="link" >
+  Beautiful, customizable wallet connection UI
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+connectkit: {
+  name: "ConnectKit",
+  description: "Beautiful, customizable wallet connection UI",
+  chains: ["evm"],
+}
+```
+
+**Strengths:**
+- Smooth animations and transitions
+- Highly customizable design system
+- Modern, minimalist aesthetic
+- Built on Wagmi
+- Great documentation
+
+**Best for:**
+- Design-focused projects
+- Apps with specific brand requirements
+- Projects wanting fine-grained UI control
+
+**When to avoid:**
+- Need social logins
+- Prefer RainbowKit's wallet variety
+- Building multi-chain apps
+
+### Privy (EVM & Solana)
+
+<Card title="Privy" icon="user-plus" >
+  Email, social, and wallet login with embedded wallets
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+privy: {
+  name: "Privy",
+  description: "Email, social, and wallet login with embedded wallets",
+  chains: ["evm", "solana"],
+}
+```
+
+**Strengths:**
+- Email and social authentication (Google, Twitter, Discord)
+- Embedded wallets created automatically
+- SMS authentication option
+- Multi-chain support (EVM + Solana)
+- User doesn't need existing wallet
+
+**Best for:**
+- Consumer-facing apps
+- Onboarding non-crypto users
+- Apps needing email login
+- Multi-chain projects
+
+**When to avoid:**
+- Targeting crypto-native users only
+- Need full decentralization (embedded wallets are custodial)
+- Want to avoid vendor lock-in
+
+### Dynamic (EVM & Solana)
+
+<Card title="Dynamic" icon="wand-magic-sparkles" >
+  Multi-chain auth with embedded wallets and onramps
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+dynamic: {
+  name: "Dynamic",
+  description: "Multi-chain auth with embedded wallets and onramps",
+  chains: ["evm", "solana"],
+}
+```
+
+**Strengths:**
+- Multi-chain from day one (EVM + Solana)
+- Embedded wallets with social auth
+- Built-in fiat onramps
+- User analytics dashboard
+- Enterprise features available
+
+**Best for:**
+- Multi-chain applications
+- Apps needing fiat-to-crypto flows
+- Projects requiring user analytics
+- Enterprise/B2B applications
+
+**When to avoid:**
+- Simple wallet connection needs
+- Cost-sensitive projects (pricing scales with users)
+- Prefer open-source solutions
+
+### Reown / AppKit (EVM & Solana)
+
+<Card title="Reown (AppKit)" icon="walletconnect" >
+  WalletConnect's official SDK (formerly Web3Modal)
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+reown: {
+  name: "Reown (AppKit)",
+  description: "WalletConnect's official SDK (formerly Web3Modal)",
+  chains: ["evm", "solana"],
+}
+```
+
+**Strengths:**
+- Official WalletConnect implementation
+- Mobile wallet scanning with QR codes
+- Cross-platform consistency
+- Multi-chain support
+- No vendor lock-in (WalletConnect protocol)
+
+**Best for:**
+- Mobile-first dApps
+- Apps using WalletConnect protocol
+- Cross-platform applications
+- Multi-chain projects
+
+**When to avoid:**
+- Don't need mobile wallet scanning
+- Prefer more polished UI (use RainbowKit)
+- Need social logins
+
+### Thirdweb (EVM & Solana)
+
+<Card title="Thirdweb" icon="cube" >
+  Full-stack web3 development platform
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+thirdweb: {
+  name: "Thirdweb",
+  description: "Full-stack web3 development platform with embedded wallets",
+  chains: ["evm", "solana"],
+}
+```
+
+**Strengths:**
+- Full development platform (not just wallets)
+- Backend SDKs for Node.js, Python, Go
+- Smart contract templates and deployment
+- Analytics and monitoring
+- Embedded wallets with social auth
+
+**Best for:**
+- Full-stack web3 projects
+- Teams wanting end-to-end solution
+- Projects needing backend SDKs
+- Apps requiring smart contract tools
+
+**When to avoid:**
+- Just need wallet connection (use RainbowKit)
+- Want minimal dependencies
+- Prefer specialized tools
+
+### GetPara / Capsule (EVM)
+
+<Card title="GetPara (Capsule)" icon="shield-halved" >
+  Embedded wallets with MPC key management
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+getpara: {
+  name: "GetPara (Capsule)",
+  description: "Embedded wallets with MPC key management",
+  chains: ["evm"],
+}
+```
+
+**Strengths:**
+- MPC (Multi-Party Computation) security
+- Email-based authentication
+- Account recovery without seed phrases
+- Enterprise-grade security
+- Developer-friendly SDK
+
+**Best for:**
+- Enterprise applications
+- Apps requiring high security
+- Projects needing account recovery
+- B2B web3 products
+
+**When to avoid:**
+- Consumer apps (less wallet variety)
+- Solana support needed
+- Targeting crypto-native users
+
+### Solana Wallet Adapter (Solana)
+
+<Card title="Solana Wallet Adapter" icon="s" >
+  Standard Solana wallet connection (recommended for Solana)
+</Card>
+
+**From the source:**
+
+```typescript src/config/wallets.ts
+"wallet-adapter": {
+  name: "Solana Wallet Adapter",
+  description: "Standard Solana wallet connection (recommended)",
+  chains: ["solana"],
+}
+```
+
+**Strengths:**
+- Official Solana wallet standard
+- Supports all major Solana wallets (Phantom, Solflare, etc.)
+- Lightweight and focused
+- Active community support
+- No vendor lock-in
+
+**Best for:**
+- Pure Solana dApps
+- Projects targeting Solana ecosystem
+- Apps wanting standard implementation
+
+**When to avoid:**
+- Need multi-chain support (use Dynamic/Privy)
+- Want social logins
+- Targeting non-crypto users
+
+## How to choose
+
+<Steps>
+  <Step title="Choose your blockchain">
+    **EVM (Ethereum)** or **Solana**?
+    
+    - Most projects start with EVM for wider ecosystem
+    - Solana is great for high-performance apps
+    - Need both? Use Privy, Dynamic, Reown, or Thirdweb
+  </Step>
+
+  <Step title="Identify your users">
+    **Crypto-native** or **mainstream**?
+    
+    **Crypto-native users:** Use RainbowKit, ConnectKit, or Wallet Adapter
+    
+    **Mainstream users:** Use Privy, Dynamic, or Thirdweb for social logins
+  </Step>
+
+  <Step title="Consider your needs">
+    - **Just wallet connection?** → RainbowKit or Wallet Adapter
+    - **Social logins?** → Privy or Dynamic
+    - **Multi-chain?** → Privy, Dynamic, Reown, or Thirdweb
+    - **Full platform?** → Thirdweb
+    - **Enterprise?** → GetPara or Dynamic
+  </Step>
+
+  <Step title="Check pricing">
+    Most providers are free for small projects:
+    
+    - **Free forever:** RainbowKit, ConnectKit, Wallet Adapter
+    - **Free tier:** Privy (up to 1K MAU), Dynamic (limited features), Thirdweb
+    - **Contact sales:** GetPara (enterprise focus)
+  </Step>
+</Steps>
+
+## Common patterns
+
+### Pattern: Pure EVM dApp
+
+```bash
+npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+```
+
+**Why:** RainbowKit offers the best UX for standard Ethereum dApps with wide wallet support.
+
+### Pattern: Solana NFT marketplace
+
+```bash
+npx create-nextjs-dapp nft-market --chain solana --wallet wallet-adapter
+```
+
+**Why:** Wallet Adapter is the standard for Solana with support for all major wallets.
+
+### Pattern: Consumer app with social login
+
+```bash
+npx create-nextjs-dapp my-app --chain evm --wallet privy
+```
+
+**Why:** Privy allows users to sign in with email/social without needing a wallet.
+
+### Pattern: Multi-chain DeFi
+
+```bash
+npx create-nextjs-dapp defi-app --chain evm --wallet dynamic
+```
+
+**Why:** Dynamic supports both EVM and Solana from day one, with fiat onramps.
+
+## Provider compatibility
+
+Compatibility matrix based on the source code:
+
+```typescript src/config/wallets.ts
+export function getProvidersForChain(chain: Chain): WalletProvider[] {
+  return (Object.entries(WALLET_PROVIDERS) as [WalletProvider, ProviderInfo][])
+    .filter(([, info]) => info.chains.includes(chain))
+    .map(([key]) => key);
+}
+```
+
+**EVM:** rainbowkit, connectkit, privy, dynamic, reown, thirdweb, getpara (7 options)
+
+**Solana:** wallet-adapter, privy, dynamic, reown, thirdweb (5 options)
+
+**Both chains:** privy, dynamic, reown, thirdweb (4 multi-chain options)
+
+## Switching providers later
+
+While possible, switching wallet providers requires code changes:
+
+<Warning>
+Wallet provider integration is tied to:
+- Provider components in `components/Providers.tsx`
+- Wallet buttons in `components/Header.tsx`
+- Dependencies in `package.json`
+- Configuration in `app/layout.tsx`
+
+Plan carefully before choosing! The easiest switch is between RainbowKit ↔ ConnectKit (both use Wagmi).
+</Warning>
+
+## Next steps
+
+Once you've chosen a provider:
+
+1. Create your project with the CLI
+2. Read the provider-specific documentation
+3. Configure your environment variables (API keys, project IDs)
+4. Customize the wallet connection UI
+5. Add your smart contract interactions
+
+<CardGroup cols={2}>
+  <Card title="RainbowKit setup" icon="rainbow" >
+    Configure RainbowKit with custom themes and chains
+  </Card>
+  
+  <Card title="Privy setup" icon="user-plus" >
+    Set up social logins and embedded wallets
+  </Card>
+  
+  <Card title="Dynamic setup" icon="wand-magic-sparkles" >
+    Configure multi-chain auth and onramps
+  </Card>
+  
+  <Card title="Wallet Adapter setup" icon="s" >
+    Connect Solana wallets with standard adapter
+  </Card>
+</CardGroup>

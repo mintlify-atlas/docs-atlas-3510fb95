@@ -1,0 +1,545 @@
+---
+title: Project structure
+description: Understand the directory layout and files in your generated dApp
+icon: folder-tree
+---
+
+Every project created with `create-nextjs-dapp` follows a consistent structure based on Next.js 14+ with the App Router. This guide explains each directory and file in your generated project.
+
+## Directory overview
+
+```
+my-dapp/
+├── app/
+│   ├── layout.tsx       # Root layout with providers
+│   ├── page.tsx         # Home page with demo component
+│   └── globals.css      # Global styles
+├── components/
+│   ├── Header.tsx       # Navigation with wallet connect
+│   ├── Greeting.tsx     # Demo smart contract interaction (EVM)
+│   └── ThemeToggle.tsx  # Dark/light mode toggle
+├── hooks/               # (EVM only)
+│   └── useGreeting.ts   # Custom hook for contract reads/writes
+├── abi/                 # (EVM only)
+│   └── greeter.json     # Smart contract ABI
+├── lib/
+│   └── utils.ts         # Utility functions (cn for tailwind)
+├── public/
+│   ├── next.svg
+│   └── vercel.svg
+├── .eslintrc.json       # ESLint configuration
+├── .gitignore           # Git ignore rules
+├── components.json      # shadcn/ui configuration
+├── next.config.js       # Next.js configuration
+├── package.json         # Dependencies and scripts
+├── postcss.config.js    # PostCSS configuration
+├── tailwind.config.ts   # Tailwind CSS configuration
+└── tsconfig.json        # TypeScript configuration
+```
+
+## Core directories
+
+### `app/` - Next.js App Router
+
+The `app` directory uses Next.js App Router with React Server Components.
+
+#### `app/layout.tsx`
+
+Root layout that wraps your entire application. This file is customized based on your wallet provider choice.
+
+**RainbowKit example:**
+
+```typescript templates/evm/rainbowkit/app/layout.tsx
+import { Providers } from '@/components/Providers';
+import { Toaster } from 'sonner';
+import '@/app/globals.css';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <body>
+        <Providers>
+          {children}
+          <Toaster position="bottom-right" />
+        </Providers>
+      </body>
+    </html>
+  );
+}
+```
+
+<Note>
+The `Providers` component is specific to each wallet provider and sets up:
+- Wagmi/web3 client configuration
+- Wallet connection modals
+- Theme provider for dark mode
+- React Query client
+</Note>
+
+#### `app/page.tsx`
+
+Home page with a demo smart contract interaction component:
+
+```typescript templates/evm/app/page.tsx
+import { Greeting } from "@/components/Greeting";
+
+const Home = () => {
+  return (
+    <main className="min-h-[calc(100vh-65px)] flex flex-col">
+      <div className="flex-1 max-w-4xl w-full mx-auto px-6 py-12 md:py-16">
+        <div className="mb-8 md:mb-12">
+          <h1 className="text-xl md:text-2xl font-medium text-foreground mb-2">
+            greeting contract
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            read and write to an on-chain greeting message
+          </p>
+        </div>
+        <Greeting />
+      </div>
+      <footer className="border-t border-border py-6">
+        {/* Footer content */}
+      </footer>
+    </main>
+  );
+};
+
+export default Home;
+```
+
+#### `app/globals.css`
+
+Global styles with Tailwind directives and CSS variables for theming:
+
+```css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    /* ... more CSS variables */
+  }
+  
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    /* ... dark mode variables */
+  }
+}
+```
+
+### `components/` - React components
+
+#### `components/Header.tsx`
+
+Navigation bar with wallet connection button (provider-specific):
+
+```typescript
+"use client";
+
+import { ConnectButton } from '@rainbow-me/rainbowkit';
+import { ThemeToggle } from './ThemeToggle';
+
+export function Header() {
+  return (
+    <header className="border-b border-border">
+      <div className="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+        <h1 className="text-lg font-medium">my-dapp</h1>
+        <div className="flex items-center gap-4">
+          <ThemeToggle />
+          <ConnectButton />
+        </div>
+      </div>
+    </header>
+  );
+}
+```
+
+<Info>
+The wallet connection button changes based on your provider:
+- **RainbowKit**: `<ConnectButton />`
+- **Privy**: `<PrivyProvider>` with `useLogin()`
+- **Dynamic**: `<DynamicWidget />`
+- **Thirdweb**: `<ConnectButton client={client} />`
+</Info>
+
+#### `components/Greeting.tsx` (EVM only)
+
+Demo component showing smart contract interaction:
+
+```typescript templates/evm/components/Greeting.tsx
+"use client";
+
+import { useState } from "react";
+import { useGreeting } from "../hooks/useGreeting";
+import { useConnectModal } from "@rainbow-me/rainbowkit";
+
+const Greeting = () => {
+  const [newGreeting, setNewGreeting] = useState<string>("");
+  
+  const {
+    address,
+    greeting,
+    getGreetingLoading,
+    setGreeting,
+    setGreetingLoading,
+  } = useGreeting({ newGreeting, onSetGreetingSuccess: () => {} });
+
+  return (
+    <div className="space-y-8">
+      {/* Current greeting display */}
+      <div className="p-6 border border-border bg-card/50">
+        {getGreetingLoading ? (
+          <div className="text-muted-foreground animate-pulse">loading...</div>
+        ) : (
+          <div className="text-2xl md:text-3xl font-medium">
+            {greeting}
+          </div>
+        )}
+      </div>
+      
+      {/* Set greeting form */}
+      <div className="p-6 border border-border bg-card/50">
+        <input
+          onChange={(e) => setNewGreeting(e.target.value)}
+          placeholder="enter new greeting..."
+          disabled={!address}
+          value={newGreeting}
+        />
+        <button
+          onClick={setGreeting}
+          disabled={!address || !newGreeting || setGreetingLoading}
+        >
+          {setGreetingLoading ? "broadcasting..." : "submit"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export { Greeting };
+```
+
+#### `components/ThemeToggle.tsx`
+
+Dark/light mode toggle using `next-themes`:
+
+```typescript
+"use client";
+
+import { Moon, Sun } from "lucide-react";
+import { useTheme } from "next-themes";
+
+export function ThemeToggle() {
+  const { theme, setTheme } = useTheme();
+
+  return (
+    <button
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
+      className="p-2 hover:bg-accent rounded-md transition-colors"
+    >
+      <Sun className="h-5 w-5 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+      <Moon className="absolute h-5 w-5 rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+    </button>
+  );
+}
+```
+
+### `hooks/` - Custom React hooks (EVM only)
+
+#### `hooks/useGreeting.ts`
+
+Custom hook for interacting with the Greeter smart contract using Wagmi:
+
+```typescript
+import { useAccount, useReadContract, useWriteContract } from 'wagmi';
+import greeterABI from '@/abi/greeter.json';
+
+const GREETER_ADDRESS = '0x...'; // Contract address
+
+export function useGreeting({ newGreeting, onSetGreetingSuccess }) {
+  const { address } = useAccount();
+  
+  // Read current greeting
+  const { data: greeting, isLoading: getGreetingLoading } = useReadContract({
+    address: GREETER_ADDRESS,
+    abi: greeterABI,
+    functionName: 'greet',
+  });
+  
+  // Write new greeting
+  const { writeContract, isPending: setGreetingLoading } = useWriteContract({
+    onSuccess: onSetGreetingSuccess,
+  });
+  
+  const setGreeting = () => {
+    writeContract({
+      address: GREETER_ADDRESS,
+      abi: greeterABI,
+      functionName: 'setGreeting',
+      args: [newGreeting],
+    });
+  };
+  
+  return {
+    address,
+    greeting,
+    getGreetingLoading,
+    setGreeting,
+    setGreetingLoading,
+  };
+}
+```
+
+### `abi/` - Smart contract ABIs (EVM only)
+
+#### `abi/greeter.json`
+
+ABI (Application Binary Interface) for the demo Greeter contract:
+
+```json
+[
+  {
+    "inputs": [],
+    "name": "greet",
+    "outputs": [{"type": "string"}],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [{"name": "_greeting", "type": "string"}],
+    "name": "setGreeting",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]
+```
+
+<Tip>
+Store your contract ABIs in the `abi/` directory. You can export them from tools like Hardhat, Foundry, or Remix.
+</Tip>
+
+### `lib/` - Utility functions
+
+#### `lib/utils.ts`
+
+Utility functions like the `cn` helper for merging Tailwind classes:
+
+```typescript
+import { clsx, type ClassValue } from "clsx";
+import { twMerge } from "tailwind-merge";
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
+```
+
+## Configuration files
+
+### `package.json`
+
+Dependencies and scripts. The exact dependencies vary by wallet provider:
+
+**Base dependencies (all projects):**
+
+```json templates/base/package.json
+{
+  "dependencies": {
+    "@tanstack/react-query": "^5.90.19",
+    "next": "^16.1.3",
+    "next-themes": "^0.4.6",
+    "react": "^19.2.3",
+    "react-dom": "^19.2.3",
+    "viem": "^2.44.4",
+    "wagmi": "^2.19.5"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  }
+}
+```
+
+**Provider-specific additions:**
+
+- **RainbowKit**: `@rainbow-me/rainbowkit`
+- **ConnectKit**: `connectkit`
+- **Privy**: `@privy-io/react-auth`, `@privy-io/wagmi`
+- **Dynamic**: `@dynamic-labs/sdk-react-core`, `@dynamic-labs/wagmi-connector`
+- **Reown**: `@reown/appkit`, `@reown/appkit-adapter-wagmi`
+- **Thirdweb**: `thirdweb`
+- **GetPara**: `@usecapsule/rainbowkit-integration`
+
+### `next.config.js`
+
+Next.js configuration (provider-specific settings may be added):
+
+```javascript
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  webpack: (config) => {
+    config.resolve.fallback = { fs: false, net: false, tls: false };
+    return config;
+  },
+};
+
+module.exports = nextConfig;
+```
+
+### `tsconfig.json`
+
+TypeScript configuration with path aliases:
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+<Note>
+The `@/*` path alias lets you import with `@/components/Header` instead of relative paths like `../../components/Header`.
+</Note>
+
+### `tailwind.config.ts`
+
+Tailwind CSS configuration with theme colors:
+
+```typescript
+import type { Config } from 'tailwindcss';
+
+const config: Config = {
+  darkMode: ['class'],
+  content: [
+    './app/**/*.{ts,tsx}',
+    './components/**/*.{ts,tsx}',
+  ],
+  theme: {
+    extend: {
+      colors: {
+        border: 'hsl(var(--border))',
+        background: 'hsl(var(--background))',
+        foreground: 'hsl(var(--foreground))',
+        // ... more theme colors
+      },
+    },
+  },
+};
+
+export default config;
+```
+
+## Where to add your code
+
+<Steps>
+  <Step title="Add new pages">
+    Create files in the `app/` directory:
+    
+    ```bash
+    app/
+    ├── page.tsx          # Home page (exists)
+    ├── about/
+    │   └── page.tsx      # /about route
+    └── dashboard/
+        └── page.tsx      # /dashboard route
+    ```
+  </Step>
+
+  <Step title="Create components">
+    Add reusable components in `components/`:
+    
+    ```bash
+    components/
+    ├── Header.tsx        # Existing
+    ├── Greeting.tsx      # Existing demo
+    ├── NFTGallery.tsx    # Your new component
+    └── TokenBalance.tsx  # Your new component
+    ```
+  </Step>
+
+  <Step title="Add smart contract ABIs">
+    Store contract ABIs in `abi/` (EVM):
+    
+    ```bash
+    abi/
+    ├── greeter.json      # Demo contract
+    ├── myNFT.json        # Your NFT contract
+    └── myToken.json      # Your token contract
+    ```
+  </Step>
+
+  <Step title="Create custom hooks">
+    Add web3 hooks in `hooks/` (EVM):
+    
+    ```bash
+    hooks/
+    ├── useGreeting.ts    # Existing demo
+    ├── useNFT.ts         # Your NFT hook
+    └── useToken.ts       # Your token hook
+    ```
+  </Step>
+
+  <Step title="Add utilities">
+    Place helper functions in `lib/`:
+    
+    ```bash
+    lib/
+    ├── utils.ts          # Existing
+    ├── formatting.ts     # Your formatters
+    └── validation.ts     # Your validators
+    ```
+  </Step>
+</Steps>
+
+## Provider-specific differences
+
+### EVM projects
+
+All EVM projects include:
+- Wagmi for Ethereum interactions
+- Viem for low-level blockchain operations
+- Demo Greeter contract interaction
+- Contract ABIs in `abi/` directory
+- Custom hooks in `hooks/` directory
+
+### Solana projects
+
+Solana projects have:
+- `@solana/web3.js` for blockchain interactions
+- `@solana/wallet-adapter-react` (for wallet-adapter provider)
+- Different component structure (no `hooks/` or `abi/` directories)
+- Solana-specific demo components
+
+<Card title="Learn about wallet providers" icon="wallet" href="/guides/wallet-providers">
+  Compare all 8 wallet providers and their differences
+</Card>
+
+## Next steps
+
+Now that you understand the project structure:
+
+1. Remove the demo `Greeting` component
+2. Add your own smart contract ABIs
+3. Create custom hooks for your contracts
+4. Build your dApp UI in `components/`
+5. Add new pages in `app/`
+
+The generated project is a starting point - customize it to fit your needs!

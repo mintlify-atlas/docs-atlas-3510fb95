@@ -1,0 +1,400 @@
+---
+title: 'Command options'
+description: 'Detailed documentation of all command-line options for create-nextjs-dapp'
+---
+
+## Overview
+
+Command options allow you to configure your dApp project without interactive prompts. Options can be combined to fully automate project creation.
+
+## Option Types
+
+### Configuration Options
+
+Options that determine your project's blockchain and wallet setup.
+
+#### Chain Selection
+
+```bash
+-c, --chain <chain>
+```
+
+Specify which blockchain to build on.
+
+**Accepted values:**
+- `evm` - Ethereum and EVM-compatible chains (Polygon, Base, Arbitrum, etc.)
+- `solana` - Solana blockchain
+
+**Default:** `evm` (when using `--yes`)
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --chain evm
+npx create-nextjs-dapp my-dapp -c solana
+npx create-nextjs-dapp my-dapp --chain=evm
+```
+
+**Source:** src/cli/args.ts:49-69
+
+#### Wallet Provider
+
+```bash
+-w, --wallet <provider>
+```
+
+Specify which wallet provider to integrate.
+
+**EVM Providers:**
+- `rainbowkit` - Best UX for connecting wallets (recommended)
+- `connectkit` - Beautiful, customizable wallet connection UI
+- `privy` - Email, social, and wallet login with embedded wallets
+- `dynamic` - Multi-chain auth with embedded wallets and onramps
+- `reown` - WalletConnect's official SDK (formerly Web3Modal)
+- `thirdweb` - Full-stack web3 development platform
+- `getpara` - Embedded wallets with MPC key management
+
+**Solana Providers:**
+- `wallet-adapter` - Standard Solana wallet connection (recommended)
+- `privy` - Email, social, and wallet login
+- `dynamic` - Multi-chain auth with embedded wallets
+- `reown` - WalletConnect's official SDK
+- `thirdweb` - Full-stack web3 development platform
+
+**Default:** First provider available for selected chain
+
+**Validation:** The command validates that the wallet provider supports the selected chain (src/cli/prompts.ts:96-111)
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --wallet rainbowkit
+npx create-nextjs-dapp my-dapp -w dynamic
+npx create-nextjs-dapp my-dapp --wallet=privy
+
+# Chain-specific examples
+npx create-nextjs-dapp my-dapp -c evm -w rainbowkit
+npx create-nextjs-dapp my-dapp -c solana -w wallet-adapter
+```
+
+**Error handling:**
+```bash
+# This will error - RainbowKit doesn't support Solana
+npx create-nextjs-dapp my-dapp --chain solana --wallet rainbowkit --yes
+# Error: RainbowKit doesn't support Solana
+# Available providers: wallet-adapter, privy, dynamic, reown, thirdweb
+```
+
+**Source:** src/cli/args.ts:28-48
+
+### Automation Options
+
+Options that control prompts and automate setup steps.
+
+#### Skip Prompts
+
+```bash
+-y, --yes
+```
+
+Skip all interactive prompts and use default values.
+
+**Default behavior:**
+- Project name: "my-dapp"
+- Chain: "evm"
+- Wallet: First available for chain (rainbowkit for EVM, wallet-adapter for Solana)
+- Git: Not initialized
+- Install: Dependencies not installed
+
+**Exit behavior:** In `--yes` mode, the command exits with an error instead of prompting when:
+- Project directory has conflicting files
+- Wallet provider doesn't support selected chain
+
+**Examples:**
+```bash
+# Create with all defaults
+npx create-nextjs-dapp my-dapp --yes
+
+# Override specific defaults
+npx create-nextjs-dapp my-dapp --yes --chain solana
+npx create-nextjs-dapp custom-name --yes --wallet dynamic
+```
+
+**Source:** src/cli/args.ts:70-71, src/cli/prompts.ts:30
+
+#### Initialize Git
+
+```bash
+--git
+```
+
+Initialize a Git repository in the project directory.
+
+**Default:** `false` (Git not initialized)
+
+**What it does:**
+- Runs `git init`
+- Creates initial commit with all scaffolded files
+- Sets up `.gitignore` for Next.js projects
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --git
+npx create-nextjs-dapp my-dapp --git --install
+```
+
+**Source:** src/cli/args.ts:72-73
+
+#### Install Dependencies
+
+```bash
+--install
+```
+
+Automatically install dependencies after project creation.
+
+**Default:** `false` (dependencies not installed)
+
+**Behavior:** Uses the detected or specified package manager to install all dependencies
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --install
+npx create-nextjs-dapp my-dapp --install --use-pnpm
+npx create-nextjs-dapp my-dapp --git --install
+```
+
+**Source:** src/cli/args.ts:74-75
+
+### Package Manager Options
+
+Options to specify which package manager to use.
+
+#### Use npm
+
+```bash
+--use-npm
+```
+
+Use npm as the package manager.
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --use-npm
+npx create-nextjs-dapp my-dapp --use-npm --install
+```
+
+**Source:** src/cli/args.ts:76-77
+
+#### Use Yarn
+
+```bash
+--use-yarn
+```
+
+Use Yarn as the package manager.
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --use-yarn
+npx create-nextjs-dapp my-dapp --use-yarn --install
+```
+
+**Source:** src/cli/args.ts:78-79
+
+#### Use pnpm
+
+```bash
+--use-pnpm
+```
+
+Use pnpm as the package manager.
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --use-pnpm
+npx create-nextjs-dapp my-dapp --use-pnpm --install
+```
+
+**Source:** src/cli/args.ts:80-81
+
+#### Use Bun
+
+```bash
+--use-bun
+```
+
+Use Bun as the package manager.
+
+**Examples:**
+```bash
+npx create-nextjs-dapp my-dapp --use-bun
+npx create-nextjs-dapp my-dapp --use-bun --install
+```
+
+**Source:** src/cli/args.ts:82-83
+
+**Note:** If no package manager flag is provided, the command auto-detects from lock files in the current directory (src/cli/prompts.ts:33)
+
+### Utility Options
+
+Options for help and version information.
+
+#### Show Help
+
+```bash
+-h, --help
+```
+
+Display help information and exit.
+
+**Output includes:**
+- Command syntax
+- All available options
+- Wallet provider list with descriptions
+- Usage examples
+
+**Exit code:** 0
+
+**Source:** src/cli/args.ts:18-21
+
+#### Show Version
+
+```bash
+-v, --version
+```
+
+Display version number and exit.
+
+**Output format:** `create-nextjs-dapp v0.1.0`
+
+**Exit code:** 0
+
+**Source:** src/cli/args.ts:23-26
+
+## Option Combinations
+
+### Fully Automated Setup
+
+Create a complete project without any prompts:
+
+```bash
+npx create-nextjs-dapp my-production-dapp \
+  --chain evm \
+  --wallet rainbowkit \
+  --git \
+  --install \
+  --use-pnpm
+```
+
+### Solana with Dynamic
+
+```bash
+npx create-nextjs-dapp solana-dapp \
+  --chain solana \
+  --wallet dynamic \
+  --git \
+  --install
+```
+
+### Quick Testing
+
+Create a test project with defaults:
+
+```bash
+npx create-nextjs-dapp test-dapp --yes
+```
+
+### CI/CD Pipeline
+
+Non-interactive setup suitable for automation:
+
+```bash
+npx create-nextjs-dapp $PROJECT_NAME \
+  --yes \
+  --chain evm \
+  --wallet rainbowkit \
+  --git \
+  --use-pnpm
+```
+
+## Interactive Examples
+
+### Partial Configuration
+
+You can specify some options and be prompted for others:
+
+```bash
+# Specify chain, prompted for wallet and project name
+npx create-nextjs-dapp --chain solana
+
+# Specify project name, prompted for chain and wallet
+npx create-nextjs-dapp my-dapp
+
+# Specify wallet, prompted for project name and chain
+npx create-nextjs-dapp --wallet privy
+```
+
+### Package Manager Detection
+
+If you don't specify `--use-*`, the command detects your package manager:
+
+```bash
+# In a directory with pnpm-lock.yaml
+npx create-nextjs-dapp my-dapp --install
+# Uses pnpm automatically
+
+# In a directory with yarn.lock
+npx create-nextjs-dapp my-dapp --install
+# Uses yarn automatically
+```
+
+## Error Handling
+
+### Invalid Chain
+
+```bash
+npx create-nextjs-dapp my-dapp --chain bitcoin
+# Error: Invalid chain "bitcoin".
+#   Valid options: evm, solana
+```
+
+### Invalid Wallet
+
+```bash
+npx create-nextjs-dapp my-dapp --wallet metamask
+# Error: Invalid wallet provider "metamask".
+#   Valid options: rainbowkit, connectkit, privy, ...
+```
+
+### Incompatible Wallet and Chain
+
+```bash
+npx create-nextjs-dapp my-dapp --chain solana --wallet rainbowkit --yes
+# Error: RainbowKit doesn't support Solana.
+#   Available providers for Solana: wallet-adapter, privy, dynamic, reown, thirdweb
+```
+
+### Missing Option Value
+
+```bash
+npx create-nextjs-dapp my-dapp --wallet
+# Error: Missing value for --wallet. Expected one of: rainbowkit, connectkit, ...
+```
+
+### Unknown Option
+
+```bash
+npx create-nextjs-dapp my-dapp --unknown-flag
+# Error: Unknown option "--unknown-flag".
+# Run create-nextjs-dapp --help for usage information.
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="create command" icon="terminal" href="/api/create-command">
+    Main command documentation
+  </Card>
+  <Card title="Flags Reference" icon="flag" href="/api/flags-reference">
+    Complete flags reference table
+  </Card>
+</CardGroup>

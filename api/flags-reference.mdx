@@ -1,0 +1,458 @@
+---
+title: 'Flags reference'
+description: 'Complete reference table of all command-line flags'
+---
+
+## Overview
+
+This page provides a comprehensive reference of all available flags for `create-nextjs-dapp`, including their syntax, types, defaults, and usage.
+
+## Configuration Flags
+
+<ParamField path="--chain" type="string" default="evm (with --yes)">
+  Specify which blockchain to build on.
+  
+  **Accepted values:** `evm`, `solana`
+  
+  **Short flag:** `-c`
+  
+  **Syntax:**
+  ```bash
+  --chain evm
+  --chain solana
+  -c evm
+  --chain=solana
+  ```
+  
+  **Interactive default:** Prompts user to select
+  
+  **Non-interactive default (--yes):** `evm`
+  
+  **Validation:** Must be one of the valid chain values. Invalid chains exit with error.
+  
+  **Source:** src/cli/args.ts:49-69
+</ParamField>
+
+<ParamField path="--wallet" type="string" default="First available for chain">
+  Specify which wallet provider to integrate.
+  
+  **EVM providers:** `rainbowkit`, `connectkit`, `privy`, `dynamic`, `reown`, `thirdweb`, `getpara`
+  
+  **Solana providers:** `wallet-adapter`, `privy`, `dynamic`, `reown`, `thirdweb`
+  
+  **Short flag:** `-w`
+  
+  **Syntax:**
+  ```bash
+  --wallet rainbowkit
+  --wallet dynamic
+  -w privy
+  --wallet=connectkit
+  ```
+  
+  **Interactive default:** Prompts user to select from chain-compatible providers
+  
+  **Non-interactive default (--yes):** First provider for selected chain:
+  - EVM: `rainbowkit`
+  - Solana: `wallet-adapter`
+  
+  **Validation:** 
+  - Must be a valid wallet provider
+  - Must support the selected chain
+  - Incompatible combinations exit with error in `--yes` mode
+  - In interactive mode, prompts for compatible provider
+  
+  **Examples:**
+  ```bash
+  # Valid - RainbowKit supports EVM
+  npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+  
+  # Invalid - RainbowKit doesn't support Solana
+  npx create-nextjs-dapp my-dapp --chain solana --wallet rainbowkit
+  # Error: RainbowKit doesn't support Solana
+  ```
+  
+  **Source:** src/cli/args.ts:28-48, src/cli/prompts.ts:96-111
+</ParamField>
+
+## Automation Flags
+
+<ParamField path="--yes" type="boolean" default="false">
+  Skip all interactive prompts and use default values.
+  
+  **Short flag:** `-y`
+  
+  **Syntax:**
+  ```bash
+  --yes
+  -y
+  ```
+  
+  **Behavior:**
+  - Uses default values for all missing options
+  - Exits with error on conflicts instead of prompting
+  - Exits with error on incompatible wallet/chain combinations
+  
+  **Default values when using --yes:**
+  - Project name: `my-dapp`
+  - Chain: `evm`
+  - Wallet: `rainbowkit` (EVM) or `wallet-adapter` (Solana)
+  - Git: Not initialized
+  - Install: Not installed
+  
+  **Use case:** CI/CD pipelines, automated testing, quick prototyping
+  
+  **Examples:**
+  ```bash
+  # Use all defaults
+  npx create-nextjs-dapp my-dapp --yes
+  
+  # Override chain default
+  npx create-nextjs-dapp my-dapp --yes --chain solana
+  
+  # Fully automated setup
+  npx create-nextjs-dapp prod-dapp --yes --git --install
+  ```
+  
+  **Source:** src/cli/args.ts:70-71, src/cli/prompts.ts:30
+</ParamField>
+
+<ParamField path="--git" type="boolean" default="false">
+  Initialize a Git repository in the project directory.
+  
+  **Syntax:**
+  ```bash
+  --git
+  ```
+  
+  **Behavior:**
+  - Runs `git init` in project directory
+  - Creates initial commit with scaffolded files
+  - Includes Next.js `.gitignore` configuration
+  
+  **Requirements:** Git must be installed and available in PATH
+  
+  **Examples:**
+  ```bash
+  npx create-nextjs-dapp my-dapp --git
+  npx create-nextjs-dapp my-dapp --git --install
+  ```
+  
+  **Source:** src/cli/args.ts:72-73
+</ParamField>
+
+<ParamField path="--install" type="boolean" default="false">
+  Automatically install dependencies after project creation.
+  
+  **Syntax:**
+  ```bash
+  --install
+  ```
+  
+  **Behavior:**
+  - Installs dependencies using detected or specified package manager
+  - Shows installation progress
+  - Validates successful installation
+  
+  **Package manager selection:**
+  1. Uses `--use-*` flag if specified
+  2. Otherwise, detects from lock files
+  3. Falls back to `npm` if no lock files found
+  
+  **Examples:**
+  ```bash
+  # Use detected package manager
+  npx create-nextjs-dapp my-dapp --install
+  
+  # Specify package manager
+  npx create-nextjs-dapp my-dapp --install --use-pnpm
+  
+  # With other automation flags
+  npx create-nextjs-dapp my-dapp --install --git --yes
+  ```
+  
+  **Source:** src/cli/args.ts:74-75
+</ParamField>
+
+## Package Manager Flags
+
+<ParamField path="--use-npm" type="boolean" default="Auto-detected">
+  Use npm as the package manager.
+  
+  **Syntax:**
+  ```bash
+  --use-npm
+  ```
+  
+  **Behavior:**
+  - Sets package manager to npm
+  - Updates `package.json` scripts accordingly
+  - Used by `--install` flag if specified
+  
+  **Mutual exclusivity:** Only one `--use-*` flag should be provided. Last flag wins.
+  
+  **Examples:**
+  ```bash
+  npx create-nextjs-dapp my-dapp --use-npm
+  npx create-nextjs-dapp my-dapp --use-npm --install
+  ```
+  
+  **Source:** src/cli/args.ts:76-77
+</ParamField>
+
+<ParamField path="--use-yarn" type="boolean" default="Auto-detected">
+  Use Yarn as the package manager.
+  
+  **Syntax:**
+  ```bash
+  --use-yarn
+  ```
+  
+  **Behavior:**
+  - Sets package manager to Yarn
+  - Updates `package.json` scripts accordingly
+  - Used by `--install` flag if specified
+  
+  **Requirements:** Yarn must be installed globally or available in PATH
+  
+  **Examples:**
+  ```bash
+  npx create-nextjs-dapp my-dapp --use-yarn
+  npx create-nextjs-dapp my-dapp --use-yarn --install
+  ```
+  
+  **Source:** src/cli/args.ts:78-79
+</ParamField>
+
+<ParamField path="--use-pnpm" type="boolean" default="Auto-detected">
+  Use pnpm as the package manager.
+  
+  **Syntax:**
+  ```bash
+  --use-pnpm
+  ```
+  
+  **Behavior:**
+  - Sets package manager to pnpm
+  - Updates `package.json` scripts accordingly
+  - Used by `--install` flag if specified
+  
+  **Requirements:** pnpm must be installed globally or available in PATH
+  
+  **Examples:**
+  ```bash
+  npx create-nextjs-dapp my-dapp --use-pnpm
+  npx create-nextjs-dapp my-dapp --use-pnpm --install
+  ```
+  
+  **Source:** src/cli/args.ts:80-81
+</ParamField>
+
+<ParamField path="--use-bun" type="boolean" default="Auto-detected">
+  Use Bun as the package manager and runtime.
+  
+  **Syntax:**
+  ```bash
+  --use-bun
+  ```
+  
+  **Behavior:**
+  - Sets package manager to Bun
+  - Updates `package.json` scripts accordingly
+  - Used by `--install` flag if specified
+  
+  **Requirements:** Bun must be installed and available in PATH
+  
+  **Examples:**
+  ```bash
+  npx create-nextjs-dapp my-dapp --use-bun
+  npx create-nextjs-dapp my-dapp --use-bun --install
+  ```
+  
+  **Source:** src/cli/args.ts:82-83
+</ParamField>
+
+## Utility Flags
+
+<ParamField path="--help" type="boolean">
+  Display help information and exit.
+  
+  **Short flag:** `-h`
+  
+  **Syntax:**
+  ```bash
+  --help
+  -h
+  ```
+  
+  **Output includes:**
+  - Command syntax
+  - All available options with descriptions
+  - Complete wallet provider list organized by chain
+  - Usage examples for common scenarios
+  - Links to documentation
+  
+  **Exit code:** 0
+  
+  **Example output:**
+  ```
+  create-nextjs-dapp v0.1.0
+  
+  Create a Next.js dApp with your preferred wallet provider.
+  
+  Usage:
+    npx create-nextjs-dapp [project-name] [options]
+  
+  Options:
+    -c, --chain <chain>     Blockchain to use (evm, solana)
+    ...
+  ```
+  
+  **Source:** src/cli/args.ts:18-21, src/cli/output.ts:30-91
+</ParamField>
+
+<ParamField path="--version" type="boolean">
+  Display version number and exit.
+  
+  **Short flag:** `-v`
+  
+  **Syntax:**
+  ```bash
+  --version
+  -v
+  ```
+  
+  **Output format:** `create-nextjs-dapp v0.1.0`
+  
+  **Exit code:** 0
+  
+  **Version source:** Read from `package.json` at runtime
+  
+  **Example:**
+  ```bash
+  $ npx create-nextjs-dapp --version
+  create-nextjs-dapp v0.1.0
+  ```
+  
+  **Source:** src/cli/args.ts:23-26, src/cli/output.ts:96-98
+</ParamField>
+
+## Flag Combinations
+
+### Common Patterns
+
+#### Quick Start with Defaults
+```bash
+npx create-nextjs-dapp my-dapp --yes
+```
+Equivalent to:
+```bash
+npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+```
+
+#### Production Setup
+```bash
+npx create-nextjs-dapp production-dapp \
+  --chain evm \
+  --wallet rainbowkit \
+  --git \
+  --install \
+  --use-pnpm
+```
+
+#### Solana Development
+```bash
+npx create-nextjs-dapp solana-app \
+  --chain solana \
+  --wallet dynamic \
+  --git \
+  --install
+```
+
+#### Testing Different Providers
+```bash
+# Test with RainbowKit
+npx create-nextjs-dapp test-rainbowkit \
+  --wallet rainbowkit \
+  --yes
+
+# Test with Privy
+npx create-nextjs-dapp test-privy \
+  --wallet privy \
+  --yes
+```
+
+### CI/CD Pipeline
+
+```bash
+npx create-nextjs-dapp $PROJECT_NAME \
+  --yes \
+  --chain "$CHAIN" \
+  --wallet "$WALLET" \
+  --git \
+  --use-pnpm
+```
+
+## Flag Validation
+
+### Validation Rules
+
+1. **Unknown flags** - Exit with error (src/cli/args.ts:84-85)
+   ```bash
+   npx create-nextjs-dapp my-dapp --unknown
+   # Error: Unknown option "--unknown".
+   ```
+
+2. **Missing values** - Exit with error (src/cli/args.ts:30-31, 51-52)
+   ```bash
+   npx create-nextjs-dapp my-dapp --chain
+   # Error: Missing value for --chain. Expected one of: evm, solana
+   ```
+
+3. **Invalid values** - Exit with error with suggestions (src/cli/args.ts:34-37, 54-58)
+   ```bash
+   npx create-nextjs-dapp my-dapp --chain bitcoin
+   # Error: Invalid chain "bitcoin".
+   #   Valid options: evm, solana
+   ```
+
+4. **Case insensitive** - Values are normalized to lowercase (src/cli/args.ts:29, 50)
+   ```bash
+   # These are equivalent:
+   npx create-nextjs-dapp my-dapp --chain EVM
+   npx create-nextjs-dapp my-dapp --chain evm
+   ```
+
+5. **Wallet/chain compatibility** - Validated before project generation (src/cli/prompts.ts:96-111)
+   ```bash
+   npx create-nextjs-dapp my-dapp --chain solana --wallet getpara
+   # Error: GetPara (Capsule) doesn't support Solana.
+   #   Available providers for Solana: wallet-adapter, privy, dynamic, reown, thirdweb
+   ```
+
+## Quick Reference Table
+
+| Flag | Short | Type | Default | Description |
+|------|-------|------|---------|-------------|
+| `--chain` | `-c` | string | `evm` | Blockchain selection |
+| `--wallet` | `-w` | string | First available | Wallet provider |
+| `--yes` | `-y` | boolean | `false` | Skip prompts |
+| `--git` | - | boolean | `false` | Initialize Git |
+| `--install` | - | boolean | `false` | Install dependencies |
+| `--use-npm` | - | boolean | Auto-detect | Use npm |
+| `--use-yarn` | - | boolean | Auto-detect | Use Yarn |
+| `--use-pnpm` | - | boolean | Auto-detect | Use pnpm |
+| `--use-bun` | - | boolean | Auto-detect | Use Bun |
+| `--help` | `-h` | boolean | - | Show help |
+| `--version` | `-v` | boolean | - | Show version |
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="create command" icon="terminal" href="/api/create-command">
+    Main command documentation and usage
+  </Card>
+  <Card title="Command Options" icon="sliders" href="/api/command-options">
+    Detailed option documentation with examples
+  </Card>
+</CardGroup>

@@ -1,80 +1,298 @@
 ---
-title: "Quickstart"
-description: "Start building awesome documentation in minutes"
+title: Quickstart
+description: Create your first Next.js dApp in under 2 minutes
 ---
 
-## Get started in three steps
+# Quickstart
 
-Get your documentation site running locally and make your first customization.
+Get started with create-nextjs-dapp in under 2 minutes. This guide will walk you through creating your first decentralized application with Next.js and your preferred wallet provider.
 
-### Step 1: Set up your local environment
+## Create Your Project
 
-<AccordionGroup>
-  <Accordion icon="copy" title="Clone your docs locally">
-    During the onboarding process, you created a GitHub repository with your docs content if you didn't already have one. You can find a link to this repository in your [dashboard](https://dashboard.mintlify.com).
+<Steps>
+  <Step title="Run the CLI">
+    Open your terminal and run the following command:
     
-    To clone the repository locally so that you can make and preview changes to your docs, follow the [Cloning a repository](https://docs.github.com/en/repositories/creating-and-managing-repositories/cloning-a-repository) guide in the GitHub docs.
-  </Accordion>
-  <Accordion icon="rectangle-terminal" title="Start the preview server">
-    1. Install the Mintlify CLI: `npm i -g mint`
-    2. Navigate to your docs directory and run: `mint dev`
-    3. Open `http://localhost:3000` to see your docs live!
+    ```bash
+    npx create-nextjs-dapp
+    ```
     
-    <Tip>Your preview updates automatically as you edit files.</Tip>
-  </Accordion>
-</AccordionGroup>
+    <Tip>
+      You can also use your preferred package manager:
+      - **Yarn:** `yarn create nextjs-dapp`
+      - **pnpm:** `pnpm create nextjs-dapp`
+      - **Bun:** `bunx create-nextjs-dapp`
+    </Tip>
+  </Step>
 
-### Step 2: Deploy your changes
-
-<AccordionGroup>
-  <Accordion icon="github" title="Install our GitHub app">
-    Install the Mintlify GitHub app from your [dashboard](https://dashboard.mintlify.com/settings/organization/github-app).
+  <Step title="Enter Project Name">
+    When prompted, enter your project name:
     
-    Our GitHub app automatically deploys your changes to your docs site, so you don't need to manage deployments yourself.
-</Accordion>
-<Accordion icon="palette" title="Update your site name and colors">
-    For a first change, let's update the name and colors of your docs site.
+    ```bash
+    ◆  What is your project named?
+    │  my-dapp
+    ```
+    
+    <Note>
+      Your project name must be a valid npm package name (lowercase, no spaces, hyphens allowed).
+    </Note>
+  </Step>
 
-    1. Open `docs.json` in your editor.
-    2. Change the `"name"` field to your project name.
-    3. Update the `"colors"` to match your brand.
-    4. Save and see your changes instantly at `http://localhost:3000`.
+  <Step title="Select Blockchain">
+    Choose which blockchain you want to build on:
+    
+    ```bash
+    ◆  Select a blockchain:
+    │  ● Ethereum (EVM) - Ethereum, Polygon, Base, Arbitrum, etc.
+    │  ○ Solana - Solana blockchain
+    ```
+    
+    - **EVM:** For Ethereum and EVM-compatible chains (Polygon, Base, Arbitrum, Optimism, etc.)
+    - **Solana:** For the Solana blockchain
+  </Step>
 
-    <Tip>Try changing the primary color to see an immediate difference!</Tip>
-  </Accordion>
-</AccordionGroup>
+  <Step title="Choose Wallet Provider">
+    Select your preferred wallet provider:
+    
+    **For EVM:**
+    ```bash
+    ◆  Select a wallet provider:
+    │  ● RainbowKit - Best UX for connecting wallets (recommended)
+    │  ○ ConnectKit - Beautiful, customizable wallet connection UI
+    │  ○ Privy - Email, social, and wallet login with embedded wallets
+    │  ○ Dynamic - Multi-chain auth with embedded wallets and onramps
+    │  ○ Reown (AppKit) - WalletConnect's official SDK (formerly Web3Modal)
+    │  ○ Thirdweb - Full-stack web3 development platform
+    │  ○ GetPara (Capsule) - Embedded wallets with MPC key management
+    ```
+    
+    **For Solana:**
+    ```bash
+    ◆  Select a wallet provider:
+    │  ● Solana Wallet Adapter - Standard Solana wallet connection (recommended)
+    │  ○ Privy - Email, social, and wallet login
+    │  ○ Dynamic - Multi-chain auth with embedded wallets
+    │  ○ Reown - WalletConnect's official SDK
+    │  ○ Thirdweb - Full-stack web3 development platform
+    ```
+  </Step>
 
-### Step 3: Go live
+  <Step title="Wait for Setup">
+    The CLI will create your project with all necessary files and configuration:
+    
+    ```bash
+    ◆  Creating project at ./my-dapp...
+    │  ✔ Project files created
+    │  ✔ Package.json configured
+    │  ✔ TypeScript configured
+    │  ✔ Tailwind CSS configured
+    │  ✔ Dependencies installed
+    ```
+  </Step>
 
-<Accordion icon="rocket" title="Publish your docs">
-  1. Commit and push your changes.
-  2. Your docs will update and be live in moments!
-</Accordion>
+  <Step title="Navigate to Project">
+    Change into your new project directory:
+    
+    ```bash
+    cd my-dapp
+    ```
+  </Step>
 
-## Next steps
+  <Step title="Install Dependencies (if needed)">
+    If you didn't use the `--install` flag, install dependencies now:
+    
+    <CodeGroup>
+      ```bash npm
+      npm install
+      ```
+      
+      ```bash yarn
+      yarn install
+      ```
+      
+      ```bash pnpm
+      pnpm install
+      ```
+      
+      ```bash bun
+      bun install
+      ```
+    </CodeGroup>
+  </Step>
 
-Now that you have your docs running, explore these key features:
+  <Step title="Configure Environment Variables">
+    Copy the example environment file and add your API keys:
+    
+    ```bash
+    cp .env.example .env.local
+    ```
+    
+    Then edit `.env.local` and add the required API keys for your wallet provider:
+    
+    <Tip>
+      Each wallet provider requires different API keys. Check the generated `.env.example` file for specific requirements:
+      - **RainbowKit/ConnectKit:** WalletConnect Project ID
+      - **Privy:** Privy App ID
+      - **Dynamic:** Dynamic Environment ID
+      - **Reown:** Reown Project ID
+      - **Thirdweb:** Thirdweb Client ID
+      - **GetPara:** Capsule API Key
+    </Tip>
+  </Step>
+
+  <Step title="Start Development Server">
+    Run the development server:
+    
+    <CodeGroup>
+      ```bash npm
+      npm run dev
+      ```
+      
+      ```bash yarn
+      yarn dev
+      ```
+      
+      ```bash pnpm
+      pnpm dev
+      ```
+      
+      ```bash bun
+      bun dev
+      ```
+    </CodeGroup>
+    
+    Your dApp will be available at [http://localhost:3000](http://localhost:3000)
+  </Step>
+</Steps>
+
+## Non-Interactive Mode
+
+For automation or CI/CD pipelines, you can skip all prompts by providing options:
+
+<CodeGroup>
+  ```bash EVM + RainbowKit
+  npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+  ```
+  
+  ```bash Solana + Dynamic
+  npx create-nextjs-dapp my-solana-app --chain solana --wallet dynamic
+  ```
+  
+  ```bash With All Options
+  npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit --git --install
+  ```
+  
+  ```bash Use Defaults
+  npx create-nextjs-dapp my-dapp --yes
+  ```
+</CodeGroup>
+
+## What's Included
+
+Your new project includes:
 
 <CardGroup cols={2}>
-
-<Card title="Write Content" icon="pen-to-square" href="/essentials/markdown">
-  Learn MDX syntax and start writing your documentation.
-</Card>
-
-<Card title="Customize style" icon="palette" href="/essentials/settings">
-  Make your docs match your brand perfectly.
-</Card>
-
-<Card title="Add code examples" icon="square-code" href="/essentials/code">
-  Include syntax-highlighted code blocks.
-</Card>
-
-<Card title="API documentation" icon="code" href="/api-reference/introduction">
-  Auto-generate API docs from OpenAPI specs.
-</Card>
-
+  <Card title="Pre-configured Wallet" icon="wallet">
+    Fully integrated wallet connection with your chosen provider, ready to use
+  </Card>
+  
+  <Card title="Example Components" icon="puzzle-piece">
+    Working examples showing how to read and write to smart contracts or programs
+  </Card>
+  
+  <Card title="Custom Hooks" icon="code">
+    TypeScript hooks for interacting with blockchain (e.g., `useGreeting` for EVM)
+  </Card>
+  
+  <Card title="Tailwind + Dark Mode" icon="moon">
+    Beautiful styling with Tailwind CSS and automatic dark mode support
+  </Card>
 </CardGroup>
 
-<Note>
-  **Need help?** See our [full documentation](https://mintlify.com/docs) or join our [community](https://mintlify.com/community).
-</Note>
+## Project Structure
+
+Here's what your new project looks like:
+
+```
+my-dapp/
+├── app/
+│   ├── layout.tsx      # Root layout with wallet providers
+│   ├── page.tsx        # Home page with wallet connect button
+│   └── globals.css     # Global styles with Tailwind
+├── components/
+│   ├── Header.tsx      # Wallet connect button
+│   ├── Greeting.tsx    # Contract interaction example (EVM only)
+│   └── ThemeToggle.tsx # Dark/light mode toggle
+├── hooks/
+│   └── useGreeting.ts  # Contract interaction hook (EVM only)
+├── abi/
+│   └── greeter.json    # Contract ABI example (EVM only)
+├── lib/
+│   └── utils.ts        # Utility functions
+├── .env.example        # Environment variables template
+├── .env.local          # Your API keys (create this)
+├── package.json        # Dependencies and scripts
+├── tsconfig.json       # TypeScript configuration
+└── tailwind.config.ts  # Tailwind configuration
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Learn about prerequisites and installation options
+  </Card>
+  
+  <Card title="CLI Options" icon="terminal" href="/guides/cli-options">
+    Explore all available CLI flags and options
+  </Card>
+  
+  <Card title="Project Structure" icon="folder-tree" href="/guides/project-structure">
+    Understand your project's file structure
+  </Card>
+  
+  <Card title="Wallet Providers" icon="wallet" href="/guides/wallet-providers">
+    Learn about each wallet provider in detail
+  </Card>
+</CardGroup>
+
+## Common Commands
+
+Here are the most common commands you'll use:
+
+```bash
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Start production server
+npm start
+
+# Run linter
+npm run lint
+
+# Type checking
+npm run typecheck
+```
+
+<Warning>
+  **Don't forget to configure your environment variables!** Your dApp won't work without the required API keys in `.env.local`.
+</Warning>
+
+## Getting Help
+
+If you run into issues:
+
+1. Check the [Installation](/installation) guide for troubleshooting tips
+2. Review the [CLI Options](/guides/cli-options) for all available options
+3. Visit our [GitHub Issues](https://github.com/0xmihirsahu/create-nextjs-dapp/issues) to report bugs
+4. Read the documentation for your chosen wallet provider
+
+<Tip>
+  **Pro tip:** Use the `--help` flag to see all available options:
+  ```bash
+  npx create-nextjs-dapp --help
+  ```
+</Tip>

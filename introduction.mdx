@@ -1,0 +1,156 @@
+---
+title: Introduction
+description: A powerful CLI tool to scaffold Next.js dApps with your preferred wallet provider and blockchain
+---
+
+# Introduction
+
+**create-nextjs-dapp** is a command-line interface (CLI) tool that helps you quickly scaffold production-ready Next.js decentralized applications (dApps) with your preferred wallet provider and blockchain support. Inspired by [create-next-app](https://github.com/vercel/next.js/tree/canary/packages/create-next-app), it streamlines the setup process so you can focus on building your web3 application.
+
+## Why create-nextjs-dapp?
+
+Building a modern dApp requires integrating multiple technologies: Next.js, wallet connections, blockchain interactions, and proper styling. create-nextjs-dapp eliminates the complexity by providing:
+
+- **Interactive CLI** with beautiful prompts for easy project setup
+- **Pre-configured wallet providers** that work out of the box
+- **TypeScript + Next.js 14+** with App Router for modern React development
+- **Ready-to-use hooks** for contract and program interactions
+- **Automatic package manager detection** (npm, yarn, pnpm, bun)
+- **Tailwind CSS** for styling with dark mode support
+- **Update notifications** to keep your CLI tool current
+
+## Key Features
+
+<CardGroup cols={2}>
+  <Card title="Multi-Blockchain Support" icon="link">
+    Build dApps for EVM chains (Ethereum, Polygon, Base, Arbitrum) or Solana with the same workflow
+  </Card>
+  <Card title="8 Wallet Providers" icon="wallet">
+    Choose from popular wallet solutions including RainbowKit, Privy, Dynamic, and more
+  </Card>
+  <Card title="TypeScript-First" icon="code">
+    Full TypeScript support with proper types for contracts, wallets, and blockchain interactions
+  </Card>
+  <Card title="Production-Ready" icon="rocket">
+    Get a complete project structure with best practices, ready to deploy
+  </Card>
+</CardGroup>
+
+## Supported Blockchains
+
+create-nextjs-dapp supports two blockchain ecosystems:
+
+### EVM (Ethereum Virtual Machine)
+
+Build dApps for any EVM-compatible blockchain:
+- Ethereum
+- Polygon
+- Base
+- Arbitrum
+- Optimism
+- And many more...
+
+### Solana
+
+Build high-performance dApps on the Solana blockchain with support for programs, PDAs, and fast transactions.
+
+## Wallet Providers
+
+create-nextjs-dapp comes pre-configured with 8 popular wallet providers:
+
+### EVM Wallet Providers
+
+<AccordionGroup>
+  <Accordion title="RainbowKit" icon="rainbow">
+    **Best UX for connecting wallets** (recommended for EVM)
+    
+    Beautiful, responsive wallet connection modal with support for 100+ wallets. Built on top of Wagmi v2 with excellent TypeScript support.
+    
+    [Learn more →](https://rainbowkit.com)
+  </Accordion>
+  
+  <Accordion title="ConnectKit" icon="plug">
+    **Beautiful, customizable wallet connection UI**
+    
+    Highly customizable wallet connection interface by Family. Supports theming, custom branding, and smooth animations.
+    
+    [Learn more →](https://docs.family.co/connectkit)
+  </Accordion>
+  
+  <Accordion title="Privy" icon="shield">
+    **Email, social, and wallet login with embedded wallets**
+    
+    Multi-chain authentication with email, social logins (Google, Twitter, Discord), and embedded wallets. Great for onboarding web2 users.
+    
+    [Learn more →](https://privy.io)
+  </Accordion>
+  
+  <Accordion title="Dynamic" icon="bolt">
+    **Multi-chain auth with embedded wallets and onramps**
+    
+    Complete authentication solution with embedded wallets, social logins, and built-in fiat onramps. Supports both EVM and Solana.
+    
+    [Learn more →](https://dynamic.xyz)
+  </Accordion>
+  
+  <Accordion title="Reown (AppKit)" icon="wallet">
+    **WalletConnect's official SDK** (formerly Web3Modal)
+    
+    The official WalletConnect SDK for connecting to 300+ wallets across mobile and desktop. Supports both EVM and Solana.
+    
+    [Learn more →](https://reown.com)
+  </Accordion>
+  
+  <Accordion title="Thirdweb" icon="cube">
+    **Full-stack web3 development platform**
+    
+    Complete web3 platform with wallet connections, smart contract tools, and embedded wallets. Supports both EVM and Solana.
+    
+    [Learn more →](https://thirdweb.com)
+  </Accordion>
+  
+  <Accordion title="GetPara (Capsule)" icon="key">
+    **Embedded wallets with MPC key management**
+    
+    Advanced embedded wallet solution using Multi-Party Computation (MPC) for secure key management without seed phrases.
+    
+    [Learn more →](https://getpara.com)
+  </Accordion>
+</AccordionGroup>
+
+### Solana Wallet Providers
+
+<AccordionGroup>
+  <Accordion title="Solana Wallet Adapter" icon="s">
+    **Standard Solana wallet connection** (recommended for Solana)
+    
+    The official Solana wallet adapter maintained by Solana Labs. Supports all major Solana wallets including Phantom, Solflare, and more.
+    
+    [Learn more →](https://github.com/solana-labs/wallet-adapter)
+  </Accordion>
+</AccordionGroup>
+
+<Note>
+  **Multi-chain providers:** Privy, Dynamic, Reown, and Thirdweb support both EVM and Solana blockchains, allowing you to build cross-chain applications.
+</Note>
+
+## What You Get
+
+Every project created with create-nextjs-dapp includes:
+
+- **Next.js 14+** with App Router and React Server Components
+- **TypeScript** configured with strict type checking
+- **Tailwind CSS** with dark mode support and custom theming
+- **Wallet connection** fully configured for your chosen provider
+- **Example components** showing contract/program interactions
+- **Custom hooks** for reading and writing to smart contracts
+- **ESLint** configuration for code quality
+- **Environment variables** setup with `.env.example`
+
+## Get Started
+
+Ready to build your first dApp? Head over to the [Quickstart](/quickstart) guide to create your first project in under 2 minutes.
+
+<Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+  Create your first Next.js dApp in under 2 minutes
+</Card>

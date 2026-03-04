@@ -1,0 +1,306 @@
+---
+title: CLI options
+description: Complete reference for all command-line flags and options
+icon: flag
+---
+
+The CLI supports various flags to customize your project creation without using interactive prompts. This is useful for automation, CI/CD pipelines, or when you already know your preferences.
+
+## Usage
+
+```bash
+npx create-nextjs-dapp [project-name] [options]
+```
+
+## Available flags
+
+### Project configuration
+
+<ParamField path="project-name" type="string">
+  The name of your project directory. Must be a valid npm package name (lowercase, no spaces).
+  
+  **Example:** `npx create-nextjs-dapp my-awesome-dapp`
+</ParamField>
+
+<ParamField path="-c, --chain" type="string">
+  Blockchain to use for your dApp.
+  
+  **Options:** `evm`, `solana`
+  
+  **Default:** `evm`
+  
+  **Example:** `--chain solana`
+</ParamField>
+
+<ParamField path="-w, --wallet" type="string">
+  Wallet provider to integrate.
+  
+  **EVM options:** `rainbowkit`, `connectkit`, `privy`, `dynamic`, `reown`, `thirdweb`, `getpara`
+  
+  **Solana options:** `wallet-adapter`, `privy`, `dynamic`, `reown`, `thirdweb`
+  
+  **Example:** `--wallet rainbowkit`
+</ParamField>
+
+### Automation flags
+
+<ParamField path="-y, --yes" type="boolean">
+  Skip all prompts and use default values.
+  
+  **Defaults used:**
+  - Project name: `my-dapp`
+  - Chain: `evm`
+  - Wallet: `rainbowkit` (for EVM) or `wallet-adapter` (for Solana)
+  
+  **Example:** `npx create-nextjs-dapp --yes`
+</ParamField>
+
+### Package manager
+
+<ParamField path="--use-npm" type="boolean">
+  Use npm as the package manager.
+  
+  **Example:** `npx create-nextjs-dapp my-app --use-npm`
+</ParamField>
+
+<ParamField path="--use-yarn" type="boolean">
+  Use yarn as the package manager.
+  
+  **Example:** `npx create-nextjs-dapp my-app --use-yarn`
+</ParamField>
+
+<ParamField path="--use-pnpm" type="boolean">
+  Use pnpm as the package manager.
+  
+  **Example:** `npx create-nextjs-dapp my-app --use-pnpm`
+</ParamField>
+
+<ParamField path="--use-bun" type="boolean">
+  Use bun as the package manager.
+  
+  **Example:** `npx create-nextjs-dapp my-app --use-bun`
+</ParamField>
+
+<Note>
+If no package manager flag is specified, the CLI will auto-detect from your environment (checking for `npm_config_user_agent` or looking for lock files).
+</Note>
+
+### Post-creation options
+
+<ParamField path="--git" type="boolean">
+  Initialize a git repository after creating the project.
+  
+  **Example:** `npx create-nextjs-dapp my-app --git`
+</ParamField>
+
+<ParamField path="--install" type="boolean">
+  Automatically install dependencies after project creation.
+  
+  **Example:** `npx create-nextjs-dapp my-app --install`
+</ParamField>
+
+### Help and version
+
+<ParamField path="-h, --help" type="boolean">
+  Show help message with all available options.
+  
+  **Example:** `npx create-nextjs-dapp --help`
+</ParamField>
+
+<ParamField path="-v, --version" type="boolean">
+  Show the current version of create-nextjs-dapp.
+  
+  **Example:** `npx create-nextjs-dapp --version`
+</ParamField>
+
+## Examples
+
+### Basic usage
+
+Create a project with interactive prompts:
+
+```bash
+npx create-nextjs-dapp
+```
+
+### Create with project name
+
+Specify the project name and answer prompts for chain and wallet:
+
+```bash
+npx create-nextjs-dapp my-dapp
+```
+
+### Complete non-interactive setup
+
+Create an EVM dApp with RainbowKit, no prompts:
+
+```bash
+npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+```
+
+### Solana project
+
+Create a Solana dApp with Dynamic:
+
+```bash
+npx create-nextjs-dapp my-solana-app -c solana -w dynamic
+```
+
+### Quick start with defaults
+
+Use default values for everything:
+
+```bash
+npx create-nextjs-dapp --yes
+```
+
+### Full setup with git and dependencies
+
+Create project, initialize git, and install dependencies:
+
+```bash
+npx create-nextjs-dapp my-dapp --git --install
+```
+
+### Specific package manager
+
+Create project using pnpm:
+
+```bash
+npx create-nextjs-dapp my-app --use-pnpm --install
+```
+
+### Combining multiple flags
+
+Create an EVM dApp with Privy, using bun, with git initialization:
+
+```bash
+npx create-nextjs-dapp web3-app --chain evm --wallet privy --use-bun --git --install
+```
+
+## Validation and error handling
+
+### Project name validation
+
+The project name must be a valid npm package name:
+
+```bash
+# ✅ Valid
+npx create-nextjs-dapp my-dapp
+npx create-nextjs-dapp my-awesome-web3-app
+
+# ❌ Invalid
+npx create-nextjs-dapp My-Dapp  # uppercase not allowed
+npx create-nextjs-dapp "my dapp"  # spaces not allowed
+```
+
+**From the source code:**
+
+```typescript src/cli/args.ts
+const validation = validateNpmName(arg);
+if (!validation.valid) {
+  exitWithError(
+    `Invalid project name "${arg}".\n` +
+    `  ${validation.problems?.join("\n  ")}`
+  );
+}
+```
+
+### Chain and wallet compatibility
+
+The CLI validates that your wallet provider supports your chosen blockchain:
+
+```bash
+# ✅ Valid
+npx create-nextjs-dapp my-app --chain evm --wallet rainbowkit
+
+# ❌ Invalid - RainbowKit doesn't support Solana
+npx create-nextjs-dapp my-app --chain solana --wallet rainbowkit
+```
+
+In interactive mode, you'll be warned and can choose another provider. In non-interactive mode (`--yes`), the CLI will exit with an error.
+
+**From the source code:**
+
+```typescript src/cli/prompts.ts
+if (wallet && !availableProviders.includes(wallet)) {
+  if (useDefaults) {
+    p.log.error(
+      `${pc.red(WALLET_PROVIDERS[wallet].name)} doesn't support ${pc.cyan(CHAINS[chain].name)}.`
+    );
+    p.log.info(
+      `Available providers for ${CHAINS[chain].name}: ${availableProviders.map(w => pc.cyan(w)).join(", ")}`
+    );
+    process.exit(1);
+  }
+}
+```
+
+### Directory conflicts
+
+If the target directory already exists and contains files:
+
+**Interactive mode:** You'll be prompted to confirm overwriting
+
+**Non-interactive mode:** The CLI exits with an error listing the conflicting files
+
+```bash
+# This will fail if my-dapp already exists with files
+npx create-nextjs-dapp my-dapp --yes
+```
+
+## When to use flags vs interactive mode
+
+<CardGroup cols={2}>
+  <Card title="Use interactive mode when:" icon="terminal">
+    - You're creating a project manually
+    - You want to see all available options
+    - You're new to the tool
+    - You want descriptions for each provider
+  </Card>
+
+  <Card title="Use flags when:" icon="flag">
+    - Automating in CI/CD pipelines
+    - You know exactly what you want
+    - Creating multiple similar projects
+    - Writing scripts or documentation
+  </Card>
+</CardGroup>
+
+## Flag precedence
+
+When both flags and prompts are used:
+
+1. **Flags take precedence** - If a flag is provided, that value is used
+2. **Missing flags trigger prompts** - If a flag is not provided, you'll be prompted
+3. **`--yes` overrides prompts** - The `--yes` flag skips all prompts and uses defaults
+
+```bash
+# Chain is set to evm, but you'll be prompted for wallet
+npx create-nextjs-dapp my-app --chain evm
+
+# Everything uses defaults, no prompts
+npx create-nextjs-dapp my-app --yes
+
+# Chain uses evm flag, wallet uses default (no prompt)
+npx create-nextjs-dapp my-app --chain evm --yes
+```
+
+## Getting help
+
+View the help message with examples:
+
+```bash
+npx create-nextjs-dapp --help
+```
+
+This displays:
+- All available flags
+- List of wallet providers by blockchain
+- Common usage examples
+- Link to documentation
+
+<Card title="Explore wallet providers" icon="wallet" href="/guides/wallet-providers">
+  Learn about all 8 wallet providers and how to choose the right one
+</Card>

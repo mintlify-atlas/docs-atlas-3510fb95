@@ -1,0 +1,690 @@
+---
+title: "EVM wallets"
+description: "Comprehensive guide to EVM wallet providers available in create-nextjs-dapp"
+---
+
+Create-nextjs-dapp supports seven different wallet providers for EVM chains. Each provider offers unique features and benefits for different use cases.
+
+## Available Providers
+
+### RainbowKit (Recommended)
+
+**Best UX for connecting wallets**
+
+RainbowKit provides a beautiful, responsive wallet connection experience with extensive wallet support and customization options.
+
+- **Website**: [rainbowkit.com](https://rainbowkit.com)
+- **Best for**: Production apps requiring excellent UX
+- **Features**: Custom themes, extensive wallet support, WalletConnect integration
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet rainbowkit
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your WalletConnect Project ID:
+1. Go to [cloud.walletconnect.com](https://cloud.walletconnect.com)
+2. Sign up or log in
+3. Create a new project
+4. Copy the Project ID
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode, useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  darkTheme,
+  lightTheme,
+} from "@rainbow-me/rainbowkit";
+import { ThemeProvider, useTheme } from "next-themes";
+import { sepolia } from "wagmi/chains";
+
+const queryClient = new QueryClient();
+
+const projectId = process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "";
+
+const config = projectId
+  ? getDefaultConfig({
+      appName: "web3 starter",
+      projectId,
+      chains: [sepolia],
+      ssr: true,
+    })
+  : createConfig({
+      chains: [sepolia],
+      transports: {
+        [sepolia.id]: http(),
+      },
+      ssr: true,
+    });
+
+const RainbowKitWithTheme = ({ children }: { children: ReactNode }) => {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const rainbowTheme =
+    mounted && resolvedTheme === "light" ? lightTheme() : darkTheme();
+
+  return (
+    <RainbowKitProvider theme={rainbowTheme}>{children}</RainbowKitProvider>
+  );
+};
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <RainbowKitWithTheme>{children}</RainbowKitWithTheme>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Usage in Components
+
+```tsx title="components/Header.tsx"
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
+const Header = () => {
+  return (
+    <header>
+      <ConnectButton.Custom>
+        {({
+          account,
+          chain,
+          openAccountModal,
+          openChainModal,
+          openConnectModal,
+          mounted,
+        }) => {
+          const ready = mounted;
+          const connected = ready && account && chain;
+
+          if (!connected) {
+            return (
+              <button onClick={openConnectModal}>
+                connect wallet
+              </button>
+            );
+          }
+
+          if (chain.unsupported) {
+            return (
+              <button onClick={openChainModal}>
+                wrong network
+              </button>
+            );
+          }
+
+          return (
+            <div>
+              <button onClick={openChainModal}>
+                {chain.name?.toLowerCase()}
+              </button>
+              <button onClick={openAccountModal}>
+                {account.displayName}
+              </button>
+            </div>
+          );
+        }}
+      </ConnectButton.Custom>
+    </header>
+  );
+};
+```
+
+---
+
+### ConnectKit
+
+**Beautiful, customizable wallet connection UI**
+
+ConnectKit offers a polished wallet connection experience with built-in customization options and excellent developer experience.
+
+- **Website**: [docs.family.co/connectkit](https://docs.family.co/connectkit)
+- **Best for**: Apps needing customizable wallet UI
+- **Features**: Theme customization, modal variants, responsive design
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet connectkit
+```
+
+#### Required API Keys
+
+```bash
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { ConnectKitProvider, getDefaultConfig } from "connectkit";
+import { ThemeProvider } from "next-themes";
+import { sepolia } from "wagmi/chains";
+
+const queryClient = new QueryClient();
+
+const config = createConfig(
+  getDefaultConfig({
+    chains: [sepolia],
+    transports: {
+      [sepolia.id]: http(),
+    },
+    walletConnectProjectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID || "",
+    appName: "web3 starter",
+  })
+);
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <WagmiProvider config={config}>
+        <QueryClientProvider client={queryClient}>
+          <ConnectKitProvider mode="dark">{children}</ConnectKitProvider>
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+#### Usage in Components
+
+```tsx title="components/Header.tsx"
+import { ConnectKitButton } from "connectkit";
+
+const Header = () => {
+  return (
+    <header>
+      <ConnectKitButton />
+    </header>
+  );
+};
+```
+
+---
+
+### Privy
+
+**Email, social, and wallet login with embedded wallets**
+
+Privy enables seamless onboarding with email/social login alongside traditional wallet connections, plus embedded wallet creation.
+
+- **Website**: [privy.io](https://privy.io)
+- **Best for**: Apps requiring easy onboarding and embedded wallets
+- **Features**: Email/social login, embedded wallets, SMS authentication
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet privy
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your Privy App ID:
+1. Go to [dashboard.privy.io](https://dashboard.privy.io)
+2. Sign up or log in
+3. Create a new app
+4. Copy the App ID from Settings
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider } from "wagmi";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { PrivyWagmiConnector } from "@privy-io/wagmi";
+import { createConfig, http } from "wagmi";
+import { ThemeProvider } from "next-themes";
+import { sepolia } from "wagmi/chains";
+
+const queryClient = new QueryClient();
+
+const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "";
+
+const config = createConfig({
+  chains: [sepolia],
+  transports: {
+    [sepolia.id]: http(),
+  },
+  ssr: true,
+});
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <PrivyProvider
+        appId={appId}
+        config={{
+          appearance: {
+            theme: "dark",
+          },
+          embeddedWallets: {
+            createOnLogin: "users-without-wallets",
+          },
+          defaultChain: sepolia,
+          supportedChains: [sepolia],
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          <PrivyWagmiConnector config={config}>
+            <WagmiProvider config={config}>{children}</WagmiProvider>
+          </PrivyWagmiConnector>
+        </QueryClientProvider>
+      </PrivyProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+---
+
+### Dynamic
+
+**Multi-chain auth with embedded wallets and onramps**
+
+Dynamic provides comprehensive authentication with multi-chain support, embedded wallets, and built-in fiat onramps.
+
+- **Website**: [dynamic.xyz](https://dynamic.xyz)
+- **Best for**: Multi-chain apps with advanced auth requirements
+- **Features**: Multi-chain support, embedded wallets, onramps, social login
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet dynamic
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID=your_environment_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your Dynamic Environment ID:
+1. Go to [app.dynamic.xyz](https://app.dynamic.xyz)
+2. Sign up or log in
+3. Create a new project
+4. Go to Developer > SDK & API Keys
+5. Copy the Environment ID
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import {
+  DynamicContextProvider,
+  DynamicWidget,
+} from "@dynamic-labs/sdk-react-core";
+import { EthereumWalletConnectors } from "@dynamic-labs/ethereum";
+import { DynamicWagmiConnector } from "@dynamic-labs/wagmi-connector";
+import { ThemeProvider } from "next-themes";
+import { sepolia } from "wagmi/chains";
+
+const queryClient = new QueryClient();
+
+const environmentId = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "";
+
+const config = createConfig({
+  chains: [sepolia],
+  transports: {
+    [sepolia.id]: http(),
+  },
+  ssr: true,
+});
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <DynamicContextProvider
+        settings={{
+          environmentId,
+          walletConnectors: [EthereumWalletConnectors],
+        }}
+      >
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            <DynamicWagmiConnector>{children}</DynamicWagmiConnector>
+          </QueryClientProvider>
+        </WagmiProvider>
+      </DynamicContextProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+---
+
+### Reown (AppKit)
+
+**WalletConnect's official SDK (formerly Web3Modal)**
+
+Reown (previously WalletConnect) provides the official AppKit SDK with extensive wallet support and multi-chain capabilities.
+
+- **Website**: [reown.com](https://reown.com)
+- **Best for**: Apps requiring WalletConnect protocol
+- **Features**: Official WalletConnect SDK, multi-chain, extensive wallet support
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet reown
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_REOWN_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your Reown Project ID:
+1. Go to [cloud.reown.com](https://cloud.reown.com)
+2. Sign up or log in
+3. Create a new project
+4. Copy the Project ID
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode, useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, type Config } from "wagmi";
+import { createAppKit } from "@reown/appkit/react";
+import { WagmiAdapter } from "@reown/appkit-adapter-wagmi";
+import { ThemeProvider } from "next-themes";
+import { sepolia } from "wagmi/chains";
+
+const queryClient = new QueryClient();
+
+const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || "";
+
+let wagmiAdapter: WagmiAdapter | null = null;
+let isAppKitInitialized = false;
+
+function initializeAppKit() {
+  if (isAppKitInitialized || !projectId) return;
+
+  wagmiAdapter = new WagmiAdapter({
+    networks: [sepolia],
+    projectId,
+    ssr: true,
+  });
+
+  createAppKit({
+    adapters: [wagmiAdapter],
+    networks: [sepolia],
+    projectId,
+    features: {
+      analytics: true,
+    },
+    themeMode: "dark",
+  });
+
+  isAppKitInitialized = true;
+}
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (!projectId) {
+      console.warn(
+        "Missing NEXT_PUBLIC_REOWN_PROJECT_ID. Get one at https://cloud.reown.com/"
+      );
+    } else {
+      initializeAppKit();
+    }
+    setMounted(true);
+  }, []);
+
+  if (!projectId || !mounted || !wagmiAdapter) {
+    return <div className="min-h-screen" />;
+  }
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <WagmiProvider config={wagmiAdapter.wagmiConfig as Config}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </WagmiProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+---
+
+### Thirdweb
+
+**Full-stack web3 development platform with embedded wallets**
+
+Thirdweb offers a complete web3 development platform including wallet connections, smart contract tools, and embedded wallets.
+
+- **Website**: [thirdweb.com](https://thirdweb.com)
+- **Best for**: Full-stack web3 development with comprehensive tooling
+- **Features**: Embedded wallets, smart contract deployment, analytics
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet thirdweb
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_client_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your Thirdweb Client ID:
+1. Go to [thirdweb.com/dashboard](https://thirdweb.com/dashboard)
+2. Sign up or log in
+3. Go to Settings > API Keys
+4. Create a new API key
+5. Copy the Client ID
+
+#### Implementation
+
+```tsx title="lib/client.ts"
+import { createThirdwebClient } from "thirdweb";
+
+const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "";
+
+if (!clientId) {
+  console.warn(
+    "Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID. Get one at https://thirdweb.com/dashboard"
+  );
+}
+
+export const client = createThirdwebClient({
+  clientId,
+});
+```
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThirdwebProvider } from "thirdweb/react";
+import { ThemeProvider } from "next-themes";
+
+import "../lib/client";
+
+const queryClient = new QueryClient();
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThirdwebProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </ThirdwebProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+---
+
+### GetPara (Capsule)
+
+**Embedded wallets with MPC key management**
+
+GetPara (powered by Capsule) provides secure embedded wallets using Multi-Party Computation (MPC) for enhanced security.
+
+- **Website**: [getpara.com](https://getpara.com)
+- **Best for**: Apps requiring MPC-based embedded wallets
+- **Features**: MPC key management, embedded wallets, enhanced security
+- **Chains**: EVM only
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain evm --wallet getpara
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_PARA_API_KEY=your_api_key
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your GetPara API Key:
+1. Go to [developer.getpara.com](https://developer.getpara.com)
+2. Sign up or log in
+3. Create a new project
+4. Copy the API Key
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { ParaProvider, Environment } from "@getpara/react-sdk";
+import { ThemeProvider } from "next-themes";
+import { sepolia } from "wagmi/chains";
+import "@getpara/react-sdk/styles.css";
+
+const queryClient = new QueryClient();
+
+const apiKey = process.env.NEXT_PUBLIC_PARA_API_KEY || "";
+
+const config = createConfig({
+  chains: [sepolia],
+  transports: {
+    [sepolia.id]: http(),
+  },
+  ssr: true,
+});
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  if (!apiKey) {
+    console.warn(
+      "Missing NEXT_PUBLIC_PARA_API_KEY. Get one at https://developer.getpara.com/"
+    );
+  }
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ParaProvider
+        paraClientConfig={{
+          apiKey,
+          environment: Environment.BETA,
+        }}
+      >
+        <WagmiProvider config={config}>
+          <QueryClientProvider client={queryClient}>
+            {children}
+          </QueryClientProvider>
+        </WagmiProvider>
+      </ParaProvider>
+    </ThemeProvider>
+  );
+};
+```
+
+---
+
+## Provider Comparison
+
+| Provider | Type | Embedded Wallets | Social Login | Multi-chain | Best For |
+|----------|------|------------------|--------------|-------------|----------|
+| RainbowKit | Connect | No | No | EVM only | Best UX |
+| ConnectKit | Connect | No | No | EVM only | Customization |
+| Privy | Auth | Yes | Yes | EVM + Solana | Easy onboarding |
+| Dynamic | Auth | Yes | Yes | EVM + Solana | Enterprise |
+| Reown | Connect | No | No | EVM + Solana | WalletConnect |
+| Thirdweb | Platform | Yes | Yes | EVM + Solana | Full-stack |
+| GetPara | Auth | Yes (MPC) | No | EVM only | MPC security |
+
+## Next Steps
+
+- Learn about [Solana wallet providers](/wallets/solana-wallets)
+- Configure your [wallet provider settings](/wallets/configuration)
+- Explore the [Quick Start guide](/quickstart)

@@ -1,0 +1,444 @@
+---
+title: Installation
+description: Prerequisites and installation methods for create-nextjs-dapp
+---
+
+# Installation
+
+This guide covers everything you need to install and run create-nextjs-dapp on your system.
+
+## Prerequisites
+
+Before you begin, ensure you have the following installed:
+
+### Node.js
+
+create-nextjs-dapp requires **Node.js 18 or higher**.
+
+<CodeGroup>
+  ```bash Check Version
+  node --version
+  ```
+  
+  ```bash Expected Output
+  v18.0.0 # or higher (v20.x, v22.x)
+  ```
+</CodeGroup>
+
+<Note>
+  **Recommended:** Use Node.js 20.x or 22.x for the best performance and latest features.
+</Note>
+
+#### Installing Node.js
+
+If you don't have Node.js installed or need to upgrade:
+
+<Tabs>
+  <Tab title="Official Installer">
+    Download and install from [nodejs.org](https://nodejs.org):
+    - **LTS version (Recommended):** Stable, production-ready
+    - **Current version:** Latest features
+  </Tab>
+  
+  <Tab title="nvm (Recommended)">
+    Use [nvm](https://github.com/nvm-sh/nvm) to manage multiple Node.js versions:
+    
+    ```bash
+    # Install nvm
+    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash
+    
+    # Install Node.js LTS
+    nvm install --lts
+    
+    # Use the installed version
+    nvm use --lts
+    ```
+  </Tab>
+  
+  <Tab title="Package Manager">
+    **macOS (Homebrew):**
+    ```bash
+    brew install node
+    ```
+    
+    **Ubuntu/Debian:**
+    ```bash
+    curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+    ```
+    
+    **Windows (Chocolatey):**
+    ```bash
+    choco install nodejs
+    ```
+  </Tab>
+</Tabs>
+
+### Package Manager
+
+You'll need at least one package manager. create-nextjs-dapp works with:
+
+- **npm** (comes with Node.js) - Default
+- **yarn** - Fast, reliable package manager
+- **pnpm** - Efficient disk space usage
+- **bun** - Fast all-in-one JavaScript runtime
+
+The CLI will automatically detect which package manager you're using.
+
+## Installation Methods
+
+create-nextjs-dapp is designed to be run directly with `npx` without global installation. Choose your preferred package manager:
+
+<CodeGroup>
+  ```bash npm
+  npx create-nextjs-dapp
+  ```
+  
+  ```bash yarn
+  yarn create nextjs-dapp
+  ```
+  
+  ```bash pnpm
+  pnpm create nextjs-dapp
+  ```
+  
+  ```bash bun
+  bunx create-nextjs-dapp
+  ```
+</CodeGroup>
+
+<Tip>
+  The CLI automatically detects which package manager you used to run it and will use the same one for installing dependencies in your project.
+</Tip>
+
+### Global Installation (Optional)
+
+While not recommended, you can install globally if preferred:
+
+<CodeGroup>
+  ```bash npm
+  npm install -g create-nextjs-dapp
+  create-nextjs-dapp
+  ```
+  
+  ```bash yarn
+  yarn global add create-nextjs-dapp
+  create-nextjs-dapp
+  ```
+  
+  ```bash pnpm
+  pnpm add -g create-nextjs-dapp
+  create-nextjs-dapp
+  ```
+  
+  ```bash bun
+  bun add -g create-nextjs-dapp
+  create-nextjs-dapp
+  ```
+</CodeGroup>
+
+<Warning>
+  **Not recommended:** Global installation means you won't automatically get updates. Using `npx` ensures you always run the latest version.
+</Warning>
+
+## Verification
+
+Verify that create-nextjs-dapp is working correctly:
+
+<Steps>
+  <Step title="Check Version">
+    Run the version command:
+    
+    ```bash
+    npx create-nextjs-dapp --version
+    ```
+    
+    Expected output:
+    ```
+    create-nextjs-dapp v0.1.0
+    ```
+  </Step>
+  
+  <Step title="View Help">
+    Display the help message to see all available options:
+    
+    ```bash
+    npx create-nextjs-dapp --help
+    ```
+    
+    You should see the full CLI documentation with all available flags and wallet providers.
+  </Step>
+  
+  <Step title="Create Test Project">
+    Create a test project to ensure everything works:
+    
+    ```bash
+    npx create-nextjs-dapp test-project --chain evm --wallet rainbowkit
+    cd test-project
+    npm install
+    npm run dev
+    ```
+    
+    If successful, you'll see the development server running at `http://localhost:3000`.
+  </Step>
+</Steps>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Error: Node version not supported">
+    **Problem:** You're running Node.js version 17 or lower.
+    
+    **Solution:** Upgrade to Node.js 18 or higher:
+    ```bash
+    # Using nvm
+    nvm install 20
+    nvm use 20
+    
+    # Or download from nodejs.org
+    ```
+    
+    Verify your version:
+    ```bash
+    node --version
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: npx command not found">
+    **Problem:** npm is not installed or not in your PATH.
+    
+    **Solution:**
+    1. Reinstall Node.js from [nodejs.org](https://nodejs.org) (includes npm)
+    2. Or install npm separately:
+       ```bash
+       curl -L https://www.npmjs.com/install.sh | sh
+       ```
+    
+    Verify npm installation:
+    ```bash
+    npm --version
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: Permission denied (EACCES)">
+    **Problem:** npm doesn't have permission to install packages globally.
+    
+    **Solution 1 (Recommended):** Use `npx` instead of global installation:
+    ```bash
+    npx create-nextjs-dapp
+    ```
+    
+    **Solution 2:** Fix npm permissions:
+    ```bash
+    # Change npm's default directory
+    mkdir ~/.npm-global
+    npm config set prefix '~/.npm-global'
+    echo 'export PATH=~/.npm-global/bin:$PATH' >> ~/.bashrc
+    source ~/.bashrc
+    ```
+    
+    **Solution 3:** Use a Node version manager like nvm (recommended).
+  </Accordion>
+  
+  <Accordion title="Error: Package name validation failed">
+    **Problem:** Your project name contains invalid characters.
+    
+    **Solution:** Use a valid npm package name:
+    - Lowercase letters only
+    - No spaces (use hyphens instead)
+    - Start with a letter
+    - Only letters, numbers, hyphens, and underscores
+    
+    ✅ Valid names:
+    ```
+    my-dapp
+    my_dapp_v2
+    cooldapp123
+    ```
+    
+    ❌ Invalid names:
+    ```
+    My Dapp       # spaces not allowed
+    My-Dapp       # uppercase not allowed
+    123dapp       # can't start with number
+    my@dapp       # special chars not allowed
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: Network timeout or slow installation">
+    **Problem:** npm registry is slow or blocked in your region.
+    
+    **Solution 1:** Use a faster registry mirror:
+    ```bash
+    # Temporarily use a different registry
+    npx --registry https://registry.npmmirror.com create-nextjs-dapp
+    ```
+    
+    **Solution 2:** Configure npm to use a mirror:
+    ```bash
+    npm config set registry https://registry.npmmirror.com
+    ```
+    
+    **Solution 3:** Try a different package manager:
+    ```bash
+    # pnpm is often faster
+    pnpm create nextjs-dapp
+    ```
+  </Accordion>
+  
+  <Accordion title="Error: Git not initialized">
+    **Problem:** The `--git` flag was used but git is not installed.
+    
+    **Solution 1:** Install git:
+    ```bash
+    # macOS
+    brew install git
+    
+    # Ubuntu/Debian
+    sudo apt-get install git
+    
+    # Windows
+    # Download from https://git-scm.com
+    ```
+    
+    **Solution 2:** Skip git initialization:
+    ```bash
+    npx create-nextjs-dapp my-dapp
+    # Don't use --git flag
+    ```
+    
+    You can initialize git manually later:
+    ```bash
+    cd my-dapp
+    git init
+    ```
+  </Accordion>
+  
+  <Accordion title="Warning: Package manager not found">
+    **Problem:** You specified a package manager (e.g., `--use-yarn`) but it's not installed.
+    
+    **Solution:** Install the package manager or use a different one:
+    
+    ```bash
+    # Install yarn
+    npm install -g yarn
+    
+    # Install pnpm
+    npm install -g pnpm
+    
+    # Install bun
+    curl -fsSL https://bun.sh/install | bash
+    ```
+    
+    Or use the default (npm):
+    ```bash
+    npx create-nextjs-dapp my-dapp
+    ```
+  </Accordion>
+  
+  <Accordion title="CLI is outdated">
+    **Problem:** You're using an old version of create-nextjs-dapp.
+    
+    **Solution:** 
+    When you run the CLI, it will automatically notify you if a new version is available:
+    
+    ```bash
+    ╭─────────────────────────────────────────────╮
+    │                                             │
+    │   Update available 0.1.0 → 0.2.0            │
+    │   Run npm i -g create-nextjs-dapp           │
+    │                                             │
+    ╰─────────────────────────────────────────────╯
+    ```
+    
+    If using `npx` (recommended), simply run the command again:
+    ```bash
+    npx create-nextjs-dapp@latest
+    ```
+    
+    If installed globally, update it:
+    ```bash
+    npm update -g create-nextjs-dapp
+    ```
+  </Accordion>
+</AccordionGroup>
+
+## System Requirements
+
+<CardGroup cols={2}>
+  <Card title="Operating System" icon="desktop">
+    - macOS 10.15+
+    - Windows 10/11
+    - Linux (Ubuntu 20.04+, Debian 10+, or equivalent)
+  </Card>
+  
+  <Card title="Runtime" icon="code">
+    - Node.js 18.0.0 or higher
+    - npm 9.0.0+ (or equivalent yarn/pnpm/bun)
+  </Card>
+  
+  <Card title="Disk Space" icon="hard-drive">
+    - Minimum: 500 MB free space
+    - Recommended: 2 GB free space
+  </Card>
+  
+  <Card title="Memory" icon="memory">
+    - Minimum: 2 GB RAM
+    - Recommended: 4 GB RAM or more
+  </Card>
+</CardGroup>
+
+## Additional Requirements
+
+Depending on your chosen wallet provider, you may need:
+
+### API Keys
+
+Most wallet providers require API keys or project IDs:
+
+- **RainbowKit / ConnectKit:** [WalletConnect Project ID](https://cloud.walletconnect.com)
+- **Privy:** [Privy App ID](https://dashboard.privy.io)
+- **Dynamic:** [Dynamic Environment ID](https://app.dynamic.xyz)
+- **Reown:** [Reown Project ID](https://cloud.reown.com)
+- **Thirdweb:** [Thirdweb Client ID](https://thirdweb.com/dashboard)
+- **GetPara:** [Capsule API Key](https://usecapsule.com)
+
+<Note>
+  You'll need to sign up for these services and obtain API keys before your dApp can connect to wallets. The generated `.env.example` file will remind you which keys are needed.
+</Note>
+
+### Git (Optional)
+
+If you want to initialize a git repository with `--git`:
+
+<CodeGroup>
+  ```bash Check Git
+  git --version
+  ```
+  
+  ```bash macOS
+  brew install git
+  ```
+  
+  ```bash Ubuntu/Debian
+  sudo apt-get install git
+  ```
+  
+  ```bash Windows
+  # Download from https://git-scm.com
+  ```
+</CodeGroup>
+
+## Next Steps
+
+Now that you have create-nextjs-dapp installed, you're ready to:
+
+<CardGroup cols={2}>
+  <Card title="Create Your First dApp" icon="rocket" href="/quickstart">
+    Follow the quickstart guide to build your first project
+  </Card>
+  
+  <Card title="Explore CLI Options" icon="terminal" href="/guides/cli-options">
+    Learn about all available CLI flags and options
+  </Card>
+</CardGroup>

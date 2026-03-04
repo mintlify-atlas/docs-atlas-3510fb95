@@ -1,0 +1,518 @@
+---
+title: "Wallet configuration"
+description: "Learn how to configure and customize wallet providers in create-nextjs-dapp"
+---
+
+This guide covers how to configure wallet providers, manage environment variables, customize settings, and switch between providers.
+
+## Environment Variables
+
+Each wallet provider requires specific environment variables. These are automatically generated when you create a new project.
+
+### Required Variables by Provider
+
+#### RainbowKit & ConnectKit
+
+```bash title=".env.local"
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=your_project_id
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your WalletConnect Project ID at [cloud.walletconnect.com](https://cloud.walletconnect.com)
+
+#### Privy
+
+```bash title=".env.local"
+NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
+# For EVM
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+# For Solana
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Privy App ID at [dashboard.privy.io](https://dashboard.privy.io)
+
+#### Dynamic
+
+```bash title=".env.local"
+NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID=your_environment_id
+# For EVM
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+# For Solana
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Dynamic Environment ID at [app.dynamic.xyz](https://app.dynamic.xyz)
+
+#### Reown (AppKit)
+
+```bash title=".env.local"
+NEXT_PUBLIC_REOWN_PROJECT_ID=your_project_id
+# For EVM
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+# For Solana
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Reown Project ID at [cloud.reown.com](https://cloud.reown.com)
+
+#### Thirdweb
+
+```bash title=".env.local"
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_client_id
+# For EVM
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+# For Solana
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Thirdweb Client ID at [thirdweb.com/dashboard](https://thirdweb.com/dashboard)
+
+#### GetPara (Capsule)
+
+```bash title=".env.local"
+NEXT_PUBLIC_PARA_API_KEY=your_api_key
+NEXT_PUBLIC_CONTRACT_ADDRESS=0x...
+```
+
+Get your GetPara API Key at [developer.getpara.com](https://developer.getpara.com)
+
+#### Solana Wallet Adapter
+
+```bash title=".env.local"
+# No API key required!
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+### Environment Variable Setup
+
+1. **Copy the example file**
+
+```bash
+cp .env.example .env.local
+```
+
+2. **Add your API keys**
+
+Edit `.env.local` and add your provider-specific keys.
+
+3. **Restart development server**
+
+```bash
+npm run dev
+```
+
+<Warning>
+Never commit `.env.local` to version control. It's already in `.gitignore` by default.
+</Warning>
+
+## Chain Configuration
+
+### EVM Chains
+
+Configure which EVM chains your app supports:
+
+```tsx title="components/Providers.tsx"
+import { mainnet, sepolia, polygon, arbitrum } from "wagmi/chains";
+
+const config = getDefaultConfig({
+  appName: "my app",
+  projectId,
+  chains: [mainnet, sepolia, polygon, arbitrum],
+  ssr: true,
+});
+```
+
+#### Available EVM Chains
+
+```tsx
+import {
+  mainnet,
+  sepolia,
+  polygon,
+  polygonAmoy,
+  optimism,
+  arbitrum,
+  base,
+  baseSepolia,
+  avalanche,
+  bsc,
+} from "wagmi/chains";
+```
+
+### Solana Networks
+
+Configure Solana network and RPC endpoint:
+
+```tsx title="components/Providers.tsx"
+import { clusterApiUrl } from "@solana/web3.js";
+
+// Development
+const network = "devnet";
+const endpoint = clusterApiUrl("devnet");
+
+// Production
+const network = "mainnet-beta";
+const endpoint = clusterApiUrl("mainnet-beta");
+
+// Custom RPC (recommended for production)
+const endpoint = "https://your-rpc-provider.com";
+```
+
+#### Popular Solana RPC Providers
+
+- [Helius](https://helius.dev)
+- [QuickNode](https://quicknode.com)
+- [Alchemy](https://alchemy.com)
+- [Triton](https://triton.one)
+
+## Theme Customization
+
+Most providers support theme customization to match your app's design.
+
+### RainbowKit Themes
+
+```tsx title="components/Providers.tsx"
+import { darkTheme, lightTheme, midnightTheme } from "@rainbow-me/rainbowkit";
+
+const RainbowKitWithTheme = ({ children }) => {
+  const { resolvedTheme } = useTheme();
+
+  const theme = resolvedTheme === "light" 
+    ? lightTheme()
+    : darkTheme();
+
+  // Or use midnight theme
+  const customTheme = midnightTheme();
+
+  return (
+    <RainbowKitProvider theme={theme}>
+      {children}
+    </RainbowKitProvider>
+  );
+};
+```
+
+#### Custom RainbowKit Theme
+
+```tsx
+import { darkTheme } from "@rainbow-me/rainbowkit";
+
+const customTheme = darkTheme({
+  accentColor: '#7b3fe4',
+  accentColorForeground: 'white',
+  borderRadius: 'medium',
+  fontStack: 'system',
+});
+```
+
+### ConnectKit Themes
+
+```tsx title="components/Providers.tsx"
+<ConnectKitProvider
+  mode="dark" // or "light" or "auto"
+  customTheme={{
+    "--ck-border-radius": "12px",
+    "--ck-connectbutton-font-size": "16px",
+  }}
+>
+  {children}
+</ConnectKitProvider>
+```
+
+### Privy Themes
+
+```tsx title="components/Providers.tsx"
+<PrivyProvider
+  appId={appId}
+  config={{
+    appearance: {
+      theme: "dark", // or "light"
+      accentColor: "#7b3fe4",
+      logo: "https://your-logo-url.com/logo.png",
+    },
+  }}
+>
+  {children}
+</PrivyProvider>
+```
+
+### Reown (AppKit) Themes
+
+```tsx title="components/Providers.tsx"
+createAppKit({
+  adapters: [wagmiAdapter],
+  networks: [sepolia],
+  projectId,
+  themeMode: "dark", // or "light"
+  themeVariables: {
+    "--w3m-accent": "#7b3fe4",
+    "--w3m-border-radius-master": "8px",
+  },
+});
+```
+
+## Wallet Configuration
+
+### EVM Wallet Customization
+
+#### RainbowKit Wallet List
+
+```tsx title="components/Providers.tsx"
+import { connectorsForWallets } from "@rainbow-me/rainbowkit";
+import {
+  metaMaskWallet,
+  rainbowWallet,
+  walletConnectWallet,
+  coinbaseWallet,
+  trustWallet,
+} from "@rainbow-me/rainbowkit/wallets";
+
+const connectors = connectorsForWallets(
+  [
+    {
+      groupName: "Recommended",
+      wallets: [
+        metaMaskWallet,
+        rainbowWallet,
+        coinbaseWallet,
+      ],
+    },
+    {
+      groupName: "Other",
+      wallets: [
+        walletConnectWallet,
+        trustWallet,
+      ],
+    },
+  ],
+  {
+    appName: "my app",
+    projectId,
+  }
+);
+```
+
+### Solana Wallet Customization
+
+#### Wallet Adapter Wallets
+
+```tsx title="components/Providers.tsx"
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+  BackpackWalletAdapter,
+  GlowWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+
+const wallets = useMemo(
+  () => [
+    new PhantomWalletAdapter(),
+    new SolflareWalletAdapter(),
+    new BackpackWalletAdapter(),
+    new GlowWalletAdapter(),
+  ],
+  []
+);
+
+<WalletProvider wallets={wallets} autoConnect>
+  {children}
+</WalletProvider>
+```
+
+## Advanced Configuration
+
+### Custom RPC URLs
+
+#### EVM Custom RPC
+
+```tsx title="components/Providers.tsx"
+import { createConfig, http } from "wagmi";
+import { mainnet, sepolia } from "wagmi/chains";
+
+const config = createConfig({
+  chains: [mainnet, sepolia],
+  transports: {
+    [mainnet.id]: http("https://eth-mainnet.g.alchemy.com/v2/your-api-key"),
+    [sepolia.id]: http("https://eth-sepolia.g.alchemy.com/v2/your-api-key"),
+  },
+});
+```
+
+#### Solana Custom RPC
+
+```tsx title="components/Providers.tsx"
+const endpoint = "https://rpc.helius.xyz/?api-key=your-api-key";
+
+<ConnectionProvider endpoint={endpoint}>
+  {children}
+</ConnectionProvider>
+```
+
+### Auto-Connect Configuration
+
+#### Enable Auto-Connect
+
+```tsx
+// Solana Wallet Adapter
+<WalletProvider wallets={wallets} autoConnect>
+  {children}
+</WalletProvider>
+
+// Privy
+<PrivyProvider
+  appId={appId}
+  config={{
+    loginMethods: ["email", "wallet"],
+    embeddedWallets: {
+      createOnLogin: "users-without-wallets",
+      requireUserPasswordOnCreate: false,
+    },
+  }}
+>
+```
+
+### Embedded Wallet Configuration
+
+#### Privy Embedded Wallets
+
+```tsx title="components/Providers.tsx"
+<PrivyProvider
+  appId={appId}
+  config={{
+    embeddedWallets: {
+      createOnLogin: "all-users", // or "users-without-wallets" or "off"
+      requireUserPasswordOnCreate: true,
+      noPromptOnSignature: false,
+    },
+  }}
+>
+```
+
+#### Dynamic Embedded Wallets
+
+```tsx title="components/Providers.tsx"
+<DynamicContextProvider
+  settings={{
+    environmentId,
+    walletConnectors: [EthereumWalletConnectors],
+    eventsCallbacks: {
+      onAuthSuccess: (args) => {
+        console.log("User authenticated", args);
+      },
+    },
+  }}
+>
+```
+
+## Switching Between Providers
+
+To switch wallet providers in an existing project:
+
+### 1. Install New Provider Dependencies
+
+```bash
+# Example: Switching from RainbowKit to Privy
+npm uninstall @rainbow-me/rainbowkit
+npm install @privy-io/react-auth @privy-io/wagmi
+```
+
+### 2. Update Environment Variables
+
+```bash
+# Remove old variables
+# NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...
+
+# Add new variables
+NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
+```
+
+### 3. Update Providers Component
+
+Replace the provider implementation in `components/Providers.tsx` with the new provider's code.
+
+See [EVM Wallets](/wallets/evm-wallets) or [Solana Wallets](/wallets/solana-wallets) for provider-specific implementations.
+
+### 4. Update Components
+
+Update wallet connection buttons and hooks:
+
+```tsx
+// Before (RainbowKit)
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+<ConnectButton />
+
+// After (Privy)
+import { usePrivy } from "@privy-io/react-auth";
+const { login } = usePrivy();
+<button onClick={login}>Connect Wallet</button>
+```
+
+## Provider Detection
+
+The CLI automatically detects chain and wallet compatibility:
+
+```tsx title="src/config/wallets.ts"
+export function isProviderCompatible(
+  wallet: WalletProvider,
+  chain: Chain
+): boolean {
+  return WALLET_PROVIDERS[wallet].chains.includes(chain);
+}
+
+// Usage
+if (!isProviderCompatible("getpara", "solana")) {
+  console.error("GetPara only supports EVM chains");
+}
+```
+
+## Troubleshooting
+
+### Missing Environment Variables
+
+If you see warnings about missing environment variables:
+
+1. Check that `.env.local` exists
+2. Verify variable names match exactly (including `NEXT_PUBLIC_` prefix)
+3. Restart your development server
+
+### Hydration Errors
+
+If you encounter hydration errors with wallet providers:
+
+```tsx
+const [mounted, setMounted] = useState(false);
+
+useEffect(() => {
+  setMounted(true);
+}, []);
+
+if (!mounted) return null;
+```
+
+### Network Switching
+
+Ensure your provider configuration supports the networks you want to use:
+
+```tsx
+// Make sure all networks are in the chains array
+const config = getDefaultConfig({
+  chains: [mainnet, sepolia], // Add all supported chains
+  projectId,
+});
+```
+
+## Best Practices
+
+1. **Use environment variables** for all API keys and sensitive data
+2. **Enable SSR** when using Next.js App Router
+3. **Configure custom RPC** endpoints for production apps
+4. **Implement error handling** for wallet connection failures
+5. **Test on multiple networks** before deploying
+6. **Keep dependencies updated** to get latest security fixes
+
+## Next Steps
+
+- Explore [EVM wallet providers](/wallets/evm-wallets)
+- Learn about [Solana wallet providers](/wallets/solana-wallets)
+- Check the [Quick Start guide](/quickstart)

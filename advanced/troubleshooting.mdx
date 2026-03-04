@@ -1,0 +1,423 @@
+---
+title: 'Troubleshooting'
+description: 'Common issues and solutions when using create-nextjs-dapp'
+---
+
+## Installation Issues
+
+### Command Not Found
+
+**Problem**: `create-nextjs-dapp: command not found`
+
+**Solution**: Make sure you're using `npx` to run the command:
+
+```bash
+npx create-nextjs-dapp my-dapp
+```
+
+If installing globally:
+
+```bash
+npm install -g create-nextjs-dapp
+create-nextjs-dapp my-dapp
+```
+
+### Permission Denied
+
+**Problem**: `EACCES: permission denied`
+
+**Solution**: The directory is not writable. The CLI checks for write permissions:
+
+```typescript
+if (!isWriteable(root)) {
+  p.log.error(
+    `The directory ${pc.dim(root)} is not writable.\n` +
+    `  Please check your permissions and try again.`
+  );
+  process.exit(1);
+}
+```
+
+Reference: `src/cli/prompts.ts:140-146`
+
+Fix by choosing a different directory or adjusting permissions:
+
+```bash
+# Use a directory in your home folder
+cd ~
+npx create-nextjs-dapp my-dapp
+```
+
+### Directory Already Exists
+
+**Problem**: `Directory contains files that could conflict`
+
+**Solution**: The CLI detects existing files that would be overwritten. You can:
+
+1. Use a different project name
+2. Remove the existing directory
+3. Allow the CLI to overwrite in interactive mode
+
+```bash
+# Option 1: Different name
+npx create-nextjs-dapp my-dapp-v2
+
+# Option 2: Remove existing
+rm -rf my-dapp
+npx create-nextjs-dapp my-dapp
+
+# Option 3: Interactive overwrite
+npx create-nextjs-dapp my-dapp
+# The CLI will prompt you to overwrite
+```
+
+Reference: `src/cli/prompts.ts:149-180`
+
+### Templates Not Found
+
+**Problem**: `Base template not found` or `Template for [wallet] on [chain] not found`
+
+**Solution**: This indicates a corrupted installation. Reinstall the package:
+
+```bash
+npm uninstall -g create-nextjs-dapp
+npm install -g create-nextjs-dapp
+
+# Or use npx with latest version
+npx create-nextjs-dapp@latest my-dapp
+```
+
+Reference: `src/generators/project.ts:42-72`
+
+## Wallet Connection Issues
+
+### Wallet Not Connecting
+
+**Problem**: Wallet button doesn't open or connection fails
+
+**Solution**: Check your environment variables:
+
+```bash
+# Verify .env.local exists
+ls -la .env.local
+
+# Check it contains required keys
+cat .env.local
+```
+
+Required environment variables by provider:
+
+```bash
+# RainbowKit / WalletConnect
+NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=...
+
+# Privy
+NEXT_PUBLIC_PRIVY_APP_ID=...
+
+# Dynamic
+NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID=...
+
+# Thirdweb
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=...
+```
+
+If missing, copy from example:
+
+```bash
+cp .env.example .env.local
+# Then edit .env.local with your values
+```
+
+### Wrong Network
+
+**Problem**: Wallet connects to wrong network
+
+**Solution**: Configure the correct chains in your provider setup. Check your `app/layout.tsx` or provider configuration file.
+
+### RPC Errors
+
+**Problem**: `RPC Error: Too Many Requests` or similar
+
+**Solution**: You're hitting rate limits on the default RPC. Add your own RPC endpoints:
+
+```typescript
+// For EVM
+import { http } from 'wagmi';
+
+const config = createConfig({
+  chains: [mainnet],
+  transports: {
+    [mainnet.id]: http(`https://eth-mainnet.g.alchemy.com/v2/${process.env.NEXT_PUBLIC_ALCHEMY_ID}`),
+  },
+});
+```
+
+```typescript
+// For Solana
+import { Connection } from '@solana/web3.js';
+
+const endpoint = process.env.NEXT_PUBLIC_SOLANA_RPC || clusterApiUrl('devnet');
+const connection = new Connection(endpoint);
+```
+
+## Build Errors
+
+### Type Errors
+
+**Problem**: TypeScript compilation errors
+
+**Solution**: Ensure all dependencies are installed:
+
+```bash
+# Delete node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Or with your package manager
+rm -rf node_modules yarn.lock
+yarn
+```
+
+### Module Not Found
+
+**Problem**: `Cannot find module '@/...'` or similar
+
+**Solution**: The alias paths are configured in `tsconfig.json`. Verify it exists:
+
+```json
+{
+  "compilerOptions": {
+    "paths": {
+      "@/*": ["./*"]
+    }
+  }
+}
+```
+
+Restart your development server:
+
+```bash
+# Stop the server (Ctrl+C) and restart
+npm run dev
+```
+
+### Dependency Version Conflicts
+
+**Problem**: `Conflicting peer dependencies` warnings
+
+**Solution**: The CLI uses tested versions. If you encounter conflicts:
+
+```bash
+# Use --legacy-peer-deps with npm
+npm install --legacy-peer-deps
+
+# Or use the package manager override flag
+npm install --force
+```
+
+For persistent issues, check dependency versions in the source:
+
+Reference: `src/config/dependencies.ts` for official versions
+
+### Next.js Errors
+
+**Problem**: `Error: Hydration failed` or `Text content does not match`
+
+**Solution**: This often happens with client-side wallet connections. Ensure you're using dynamic imports where needed:
+
+```typescript
+import dynamic from 'next/dynamic';
+
+const WalletButton = dynamic(
+  () => import('@/components/WalletButton'),
+  { ssr: false }
+);
+```
+
+## Package Manager Issues
+
+### Wrong Package Manager Detected
+
+**Problem**: CLI detects the wrong package manager
+
+**Solution**: Use the override flags:
+
+```bash
+# Force npm
+npx create-nextjs-dapp my-dapp --use-npm
+
+# Force yarn
+npx create-nextjs-dapp my-dapp --use-yarn
+
+# Force pnpm
+npx create-nextjs-dapp my-dapp --use-pnpm
+
+# Force bun
+npx create-nextjs-dapp my-dapp --use-bun
+```
+
+Reference: `src/cli/args.ts:76-83`
+
+### Installation Failed
+
+**Problem**: Dependencies fail to install with `--install` flag
+
+**Solution**: The CLI will show a warning but continue. Install manually:
+
+```bash
+cd my-dapp
+npm install
+```
+
+The installation function handles errors gracefully:
+
+```typescript
+export function install(
+  root: string,
+  packageManager: PackageManager
+): boolean {
+  try {
+    execSync(commands[packageManager], {
+      cwd: root,
+      stdio: "pipe",
+    });
+    return true;
+  } catch {
+    return false; // CLI continues but shows warning
+  }
+}
+```
+
+Reference: `src/helpers/install.ts:4-24`
+
+## Runtime Errors
+
+### Invalid Project Name
+
+**Problem**: `Invalid project name "..."`
+
+**Solution**: Project names must follow npm naming conventions:
+
+- All lowercase
+- No spaces (use hyphens)
+- Start with a letter
+- No special characters except `-` and `_`
+
+```bash
+# Invalid
+npx create-nextjs-dapp My App
+npx create-nextjs-dapp 123app
+
+# Valid
+npx create-nextjs-dapp my-app
+npx create-nextjs-dapp my_app
+npx create-nextjs-dapp app123
+```
+
+Reference: `src/cli/args.ts:88-94`
+
+### Invalid Chain or Wallet
+
+**Problem**: `Invalid chain "..."` or `Invalid wallet provider "..."`
+
+**Solution**: Use supported values:
+
+```bash
+# Valid chains
+--chain evm
+--chain solana
+
+# Valid wallets (EVM)
+--wallet rainbowkit
+--wallet connectkit
+--wallet privy
+--wallet dynamic
+--wallet reown
+--wallet thirdweb
+--wallet getpara
+
+# Valid wallets (Solana)
+--wallet wallet-adapter
+--wallet privy
+--wallet dynamic
+--wallet reown
+--wallet thirdweb
+```
+
+Reference: `src/cli/args.ts:28-69` and `src/config/wallets.ts:3-44`
+
+### Incompatible Wallet and Chain
+
+**Problem**: Wallet doesn't support the selected chain
+
+**Solution**: Check compatibility:
+
+- **EVM only**: RainbowKit, ConnectKit, GetPara
+- **Solana only**: Wallet Adapter
+- **Both**: Privy, Dynamic, Reown, Thirdweb
+
+```bash
+# This will error
+npx create-nextjs-dapp my-app --chain solana --wallet rainbowkit
+
+# Use compatible combination
+npx create-nextjs-dapp my-app --chain solana --wallet wallet-adapter
+```
+
+Reference: `src/config/wallets.ts:49-68`
+
+## Getting Help
+
+### Check the Documentation
+
+- [Quickstart Guide](/quickstart)
+- [CLI Options](/guides/cli-options)
+- [Wallet Providers](/guides/wallet-providers)
+- [Package Managers](/advanced/package-managers)
+
+### GitHub Issues
+
+If you encounter a bug or have a feature request:
+
+1. Check existing issues: [github.com/0xmihirsahu/create-nextjs-dapp/issues](https://github.com/0xmihirsahu/create-nextjs-dapp/issues)
+2. Create a new issue with:
+   - Your command and flags
+   - Error message (full output)
+   - Operating system and Node.js version
+   - Expected vs actual behavior
+
+### Common Debug Commands
+
+```bash
+# Check Node.js version (requires 18+)
+node --version
+
+# Check npm version
+npm --version
+
+# Clear npm cache
+npm cache clean --force
+
+# Get CLI version
+npx create-nextjs-dapp --version
+
+# View help
+npx create-nextjs-dapp --help
+```
+
+### Update to Latest Version
+
+```bash
+# Using npx (always uses latest)
+npx create-nextjs-dapp@latest my-dapp
+
+# Update global installation
+npm update -g create-nextjs-dapp
+
+# Check for updates
+npm outdated -g create-nextjs-dapp
+```
+
+The CLI includes automatic update notifications:
+
+Reference: `src/index.ts:10-55`

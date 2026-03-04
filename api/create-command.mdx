@@ -1,0 +1,185 @@
+---
+title: 'create command'
+description: 'Main command to create a new Next.js dApp with your preferred wallet provider'
+---
+
+## Overview
+
+The `create` command is the primary entry point for `create-nextjs-dapp`. It scaffolds a new Next.js project pre-configured with your chosen blockchain and wallet provider.
+
+## Syntax
+
+```bash
+npx create-nextjs-dapp [project-name] [options]
+```
+
+## How It Works
+
+The command follows a structured workflow (src/index.ts:14-61):
+
+1. **Displays intro** - Shows the `create-nextjs-dapp` banner
+2. **Parses arguments** - Processes command-line flags and options
+3. **Runs prompts** - Interactively gathers missing configuration (or uses defaults with `--yes`)
+4. **Generates project** - Creates the project structure with selected templates
+5. **Shows summary** - Displays next steps and configuration details
+6. **Checks for updates** - Notifies if a newer version is available (cached for 24 hours)
+
+## Basic Usage
+
+### Interactive Mode
+
+Run without arguments to start the interactive wizard:
+
+```bash
+npx create-nextjs-dapp
+```
+
+You'll be prompted for:
+- Project name (defaults to "my-dapp")
+- Blockchain (EVM or Solana)
+- Wallet provider (filtered by selected blockchain)
+
+### With Project Name
+
+```bash
+npx create-nextjs-dapp my-awesome-dapp
+```
+
+### Non-Interactive Mode
+
+Use `--yes` to skip all prompts and use defaults:
+
+```bash
+npx create-nextjs-dapp my-dapp --yes
+```
+
+Defaults:
+- **Project name**: "my-dapp"
+- **Chain**: EVM
+- **Wallet provider**: First available for chain (RainbowKit for EVM, Wallet Adapter for Solana)
+- **Git**: Not initialized
+- **Install**: Dependencies not installed
+
+## Full Examples
+
+### Create EVM dApp with RainbowKit
+
+```bash
+npx create-nextjs-dapp my-dapp --chain evm --wallet rainbowkit
+```
+
+### Create Solana dApp with Dynamic
+
+```bash
+npx create-nextjs-dapp solana-app --chain solana --wallet dynamic
+```
+
+### Create with Git and Install Dependencies
+
+```bash
+npx create-nextjs-dapp my-dapp --git --install
+```
+
+### Specify Package Manager
+
+```bash
+# Use pnpm
+npx create-nextjs-dapp my-dapp --use-pnpm --install
+
+# Use Bun
+npx create-nextjs-dapp my-dapp --use-bun --install
+```
+
+### Complete Non-Interactive Setup
+
+```bash
+npx create-nextjs-dapp my-dapp \
+  --chain evm \
+  --wallet rainbowkit \
+  --git \
+  --install \
+  --use-pnpm
+```
+
+## Project Name Validation
+
+The command validates project names according to npm package naming rules (src/cli/args.ts:87-95):
+
+- Must not be empty
+- Must be lowercase
+- Can contain hyphens and underscores
+- Cannot start with dots or underscores
+- Cannot contain special characters or spaces
+- Cannot be a reserved npm name
+
+**Invalid examples:**
+```bash
+npx create-nextjs-dapp My-Dapp        # uppercase not allowed
+npx create-nextjs-dapp my dapp        # spaces not allowed
+npx create-nextjs-dapp _private-dapp  # cannot start with underscore
+```
+
+**Valid examples:**
+```bash
+npx create-nextjs-dapp my-dapp
+npx create-nextjs-dapp my-awesome-web3-app
+npx create-nextjs-dapp dapp-2024
+```
+
+## Exit Codes
+
+The command uses standard exit codes:
+
+- **0** - Success (src/cli/args.ts:20, 25) or cancelled by user (src/cli/prompts.ts:56, 82, 127)
+- **1** - Error occurred:
+  - Invalid arguments (src/cli/args.ts:85)
+  - Invalid project name (src/cli/args.ts:90-94)
+  - Invalid wallet/chain combination (src/cli/args.ts:34-47, 54-68)
+  - Directory conflicts in non-interactive mode (src/cli/prompts.ts:158)
+  - Wallet incompatible with chain in `--yes` mode (src/cli/prompts.ts:105)
+  - Directory not writeable (src/cli/prompts.ts:145)
+  - Unhandled exception (src/index.ts:60)
+
+## Behavior Details
+
+### Directory Handling
+
+If the project directory already exists:
+
+- **Interactive mode**: Prompts to overwrite conflicting files
+- **Non-interactive mode** (`--yes`): Exits with error listing conflicts
+
+Conflicting files include: `package.json`, `next.config.js`, `.env.local`, etc.
+
+### Package Manager Detection
+
+If no `--use-*` flag is provided, the command detects the package manager:
+
+1. Checks for lock files in current directory
+2. Falls back to `npm` if none found
+
+Detection order:
+- `bun.lockb` → Bun
+- `pnpm-lock.yaml` → pnpm
+- `yarn.lock` → Yarn
+- `package-lock.json` → npm
+
+### Update Notifications
+
+The command checks for updates once per day (src/index.ts:12):
+
+```
+Update available: 0.1.0 → 0.2.0
+Run npm i -g create-nextjs-dapp to update
+```
+
+## Related
+
+<CardGroup cols={2}>
+  <Card title="Command Options" icon="sliders" href="/api/command-options">
+    Detailed documentation of all command options
+  </Card>
+  <Card title="Flags Reference" icon="flag" href="/api/flags-reference">
+    Complete reference of all available flags
+  </Card>
+</CardGroup>

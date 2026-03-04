@@ -1,0 +1,543 @@
+---
+title: "Solana wallets"
+description: "Comprehensive guide to Solana wallet providers available in create-nextjs-dapp"
+---
+
+Create-nextjs-dapp supports five different wallet providers for Solana. Each provider offers unique features suited for different application needs.
+
+## Available Providers
+
+### Solana Wallet Adapter (Recommended)
+
+**Standard Solana wallet connection**
+
+The official Solana Wallet Adapter provides the standard way to connect Solana wallets with extensive wallet support and community backing.
+
+- **Website**: [github.com/solana-labs/wallet-adapter](https://github.com/solana-labs/wallet-adapter)
+- **Best for**: Standard Solana applications
+- **Features**: Multiple wallet support, no API keys required, standard protocol
+- **Chains**: Solana only
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain solana --wallet wallet-adapter
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+# Solana Configuration
+# No API key required for standard wallet adapter
+
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+No API keys needed - Wallet Adapter works out of the box!
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode, useMemo } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  ConnectionProvider,
+  WalletProvider,
+} from "@solana/wallet-adapter-react";
+import { WalletModalProvider } from "@solana/wallet-adapter-react-ui";
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import { clusterApiUrl } from "@solana/web3.js";
+import { ThemeProvider } from "next-themes";
+
+import "@solana/wallet-adapter-react-ui/styles.css";
+
+const queryClient = new QueryClient();
+
+// Use devnet for development, mainnet-beta for production
+const network = "devnet";
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  const endpoint = useMemo(() => clusterApiUrl(network), []);
+
+  const wallets = useMemo(
+    () => [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+    []
+  );
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ConnectionProvider endpoint={endpoint}>
+        <WalletProvider wallets={wallets} autoConnect>
+          <WalletModalProvider>
+            <QueryClientProvider client={queryClient}>
+              {children}
+            </QueryClientProvider>
+          </WalletModalProvider>
+        </WalletProvider>
+      </ConnectionProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Usage in Components
+
+```tsx title="components/Header.tsx"
+import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
+
+const Header = () => {
+  return (
+    <header>
+      <WalletMultiButton />
+    </header>
+  );
+};
+```
+
+#### Supported Wallets
+
+The Wallet Adapter includes support for:
+- Phantom
+- Solflare
+- Backpack
+- Glow
+- Slope
+- And many more...
+
+---
+
+### Privy
+
+**Email, social, and wallet login with embedded wallets**
+
+Privy enables seamless Solana onboarding with email/social login alongside traditional wallet connections, plus embedded wallet creation.
+
+- **Website**: [privy.io](https://privy.io)
+- **Best for**: Apps requiring easy onboarding and embedded wallets
+- **Features**: Email/social login, embedded wallets, SMS authentication
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain solana --wallet privy
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_PRIVY_APP_ID=your_app_id
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Privy App ID:
+1. Go to [dashboard.privy.io](https://dashboard.privy.io)
+2. Sign up or log in
+3. Create a new app
+4. Copy the App ID from Settings
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { PrivyProvider } from "@privy-io/react-auth";
+import { ThemeProvider } from "next-themes";
+
+const queryClient = new QueryClient();
+
+const appId = process.env.NEXT_PUBLIC_PRIVY_APP_ID || "";
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  if (!appId) {
+    console.warn(
+      "Missing NEXT_PUBLIC_PRIVY_APP_ID. Get one at https://dashboard.privy.io/"
+    );
+  }
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <PrivyProvider
+        appId={appId}
+        config={{
+          appearance: {
+            theme: "dark",
+          },
+          embeddedWallets: {
+            createOnLogin: "users-without-wallets",
+          },
+          solanaClusters: [
+            {
+              name: "devnet",
+              rpcUrl: "https://api.devnet.solana.com",
+            },
+          ],
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </PrivyProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Key Features
+
+- Email and social login (Google, Twitter, Discord, etc.)
+- Automatic embedded wallet creation
+- SMS authentication
+- Custom Solana cluster configuration
+- Cross-app wallet compatibility
+
+---
+
+### Dynamic
+
+**Multi-chain auth with embedded wallets and onramps**
+
+Dynamic provides comprehensive Solana authentication with multi-chain support, embedded wallets, and built-in fiat onramps.
+
+- **Website**: [dynamic.xyz](https://dynamic.xyz)
+- **Best for**: Multi-chain apps with advanced auth requirements
+- **Features**: Multi-chain support, embedded wallets, onramps, social login
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain solana --wallet dynamic
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID=your_environment_id
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Dynamic Environment ID:
+1. Go to [app.dynamic.xyz](https://app.dynamic.xyz)
+2. Sign up or log in
+3. Create a new project
+4. Go to Developer > SDK & API Keys
+5. Copy the Environment ID
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { DynamicContextProvider } from "@dynamic-labs/sdk-react-core";
+import { SolanaWalletConnectors } from "@dynamic-labs/solana";
+import { ThemeProvider } from "next-themes";
+
+const queryClient = new QueryClient();
+
+const environmentId = process.env.NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID || "";
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  if (!environmentId) {
+    console.warn(
+      "Missing NEXT_PUBLIC_DYNAMIC_ENVIRONMENT_ID. Get one at https://app.dynamic.xyz/"
+    );
+  }
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <DynamicContextProvider
+        settings={{
+          environmentId,
+          walletConnectors: [SolanaWalletConnectors],
+        }}
+      >
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </DynamicContextProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Key Features
+
+- Multi-chain wallet support (Solana + EVM)
+- Embedded wallet creation
+- Fiat onramp integration
+- Social login options
+- Advanced analytics and user management
+
+---
+
+### Reown (AppKit)
+
+**WalletConnect's official SDK with Solana support**
+
+Reown (previously WalletConnect) provides the official AppKit SDK with Solana support alongside extensive wallet compatibility.
+
+- **Website**: [reown.com](https://reown.com)
+- **Best for**: Apps requiring WalletConnect protocol on Solana
+- **Features**: Official WalletConnect SDK, multi-chain, extensive wallet support
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain solana --wallet reown
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_REOWN_PROJECT_ID=your_project_id
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Reown Project ID:
+1. Go to [cloud.reown.com](https://cloud.reown.com)
+2. Sign up or log in
+3. Create a new project
+4. Copy the Project ID
+
+#### Implementation
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode, useState, useEffect } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { createAppKit } from "@reown/appkit/react";
+import { SolanaAdapter } from "@reown/appkit-adapter-solana";
+import {
+  PhantomWalletAdapter,
+  SolflareWalletAdapter,
+} from "@solana/wallet-adapter-wallets";
+import { solana, solanaDevnet } from "@reown/appkit/networks";
+import { ThemeProvider } from "next-themes";
+
+const queryClient = new QueryClient();
+
+const projectId = process.env.NEXT_PUBLIC_REOWN_PROJECT_ID || "";
+
+let isAppKitInitialized = false;
+
+function initializeAppKit() {
+  if (isAppKitInitialized || !projectId) return;
+
+  const solanaAdapter = new SolanaAdapter({
+    wallets: [new PhantomWalletAdapter(), new SolflareWalletAdapter()],
+  });
+
+  createAppKit({
+    adapters: [solanaAdapter],
+    networks: [solanaDevnet, solana],
+    projectId,
+    features: {
+      analytics: true,
+    },
+    themeMode: "dark",
+  });
+
+  isAppKitInitialized = true;
+}
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    if (!projectId) {
+      console.warn(
+        "Missing NEXT_PUBLIC_REOWN_PROJECT_ID. Get one at https://cloud.reown.com/"
+      );
+    } else {
+      initializeAppKit();
+    }
+    setMounted(true);
+  }, []);
+
+  if (!projectId || !mounted) {
+    return <div className="min-h-screen" />;
+  }
+
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Key Features
+
+- WalletConnect v2 protocol
+- Multi-network support (Devnet, Mainnet)
+- Analytics integration
+- Customizable themes
+- Extensive wallet compatibility
+
+---
+
+### Thirdweb
+
+**Full-stack web3 development platform with Solana support**
+
+Thirdweb offers a complete web3 development platform for Solana including wallet connections, program tools, and embedded wallets.
+
+- **Website**: [thirdweb.com](https://thirdweb.com)
+- **Best for**: Full-stack Solana development with comprehensive tooling
+- **Features**: Embedded wallets, program deployment, analytics
+- **Chains**: EVM and Solana
+
+#### Setup
+
+```bash
+npx create-nextjs-dapp@latest my-app --chain solana --wallet thirdweb
+```
+
+#### Required API Keys
+
+```bash
+# .env.example
+NEXT_PUBLIC_THIRDWEB_CLIENT_ID=your_client_id
+NEXT_PUBLIC_PROGRAM_ID=your_program_address
+```
+
+Get your Thirdweb Client ID:
+1. Go to [thirdweb.com/dashboard](https://thirdweb.com/dashboard)
+2. Sign up or log in
+3. Go to Settings > API Keys
+4. Create a new API key
+5. Copy the Client ID
+
+#### Implementation
+
+```tsx title="lib/client.ts"
+import { createThirdwebClient } from "thirdweb";
+
+const clientId = process.env.NEXT_PUBLIC_THIRDWEB_CLIENT_ID || "";
+
+if (!clientId) {
+  console.warn(
+    "Missing NEXT_PUBLIC_THIRDWEB_CLIENT_ID. Get one at https://thirdweb.com/dashboard"
+  );
+}
+
+export const client = createThirdwebClient({
+  clientId,
+});
+```
+
+```tsx title="components/Providers.tsx"
+"use client";
+
+import { ReactNode } from "react";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ThirdwebProvider } from "thirdweb/react";
+import { ThemeProvider } from "next-themes";
+
+import "../lib/client";
+
+const queryClient = new QueryClient();
+
+const Providers = ({ children }: { children: ReactNode }) => {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThirdwebProvider>
+        <QueryClientProvider client={queryClient}>
+          {children}
+        </QueryClientProvider>
+      </ThirdwebProvider>
+    </ThemeProvider>
+  );
+};
+
+export { Providers };
+```
+
+#### Key Features
+
+- Full-stack Solana development tools
+- Embedded wallet support
+- Program deployment and management
+- Analytics and monitoring
+- Cross-chain compatibility
+
+---
+
+## Provider Comparison
+
+| Provider | Type | Embedded Wallets | Social Login | API Key Required | Best For |
+|----------|------|------------------|--------------|------------------|----------|
+| Wallet Adapter | Connect | No | No | No | Standard apps |
+| Privy | Auth | Yes | Yes | Yes | Easy onboarding |
+| Dynamic | Auth | Yes | Yes | Yes | Enterprise |
+| Reown | Connect | No | No | Yes | WalletConnect |
+| Thirdweb | Platform | Yes | Yes | Yes | Full-stack |
+
+## Network Configuration
+
+All Solana providers support multiple network configurations:
+
+```tsx
+// Development
+const network = "devnet";
+const endpoint = "https://api.devnet.solana.com";
+
+// Production
+const network = "mainnet-beta";
+const endpoint = "https://api.mainnet-beta.solana.com";
+
+// Custom RPC
+const endpoint = "https://your-custom-rpc.com";
+```
+
+## Common Wallet Operations
+
+### Using Wallet Adapter
+
+```tsx
+import { useWallet } from "@solana/wallet-adapter-react";
+import { useConnection } from "@solana/wallet-adapter-react";
+
+function MyComponent() {
+  const { publicKey, signTransaction } = useWallet();
+  const { connection } = useConnection();
+
+  // Check if wallet is connected
+  const isConnected = !!publicKey;
+
+  // Get wallet balance
+  const balance = await connection.getBalance(publicKey);
+
+  return <div>Wallet: {publicKey?.toString()}</div>;
+}
+```
+
+## Next Steps
+
+- Learn about [EVM wallet providers](/wallets/evm-wallets)
+- Configure your [wallet provider settings](/wallets/configuration)
+- Explore the [Quick Start guide](/quickstart)

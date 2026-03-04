@@ -1,0 +1,200 @@
+---
+title: 'Package Managers'
+description: 'Learn how create-nextjs-dapp detects and works with different package managers'
+---
+
+## Overview
+
+create-nextjs-dapp automatically detects which package manager you're using and adapts its commands accordingly. It supports npm, yarn, pnpm, and bun.
+
+## Auto-Detection
+
+The CLI uses the `npm_config_user_agent` environment variable to detect which package manager invoked the command:
+
+```typescript
+export function getPkgManager(): PackageManager {
+  const userAgent = process.env.npm_config_user_agent || "";
+
+  if (userAgent.startsWith("yarn")) {
+    return "yarn";
+  }
+
+  if (userAgent.startsWith("pnpm")) {
+    return "pnpm";
+  }
+
+  if (userAgent.startsWith("bun")) {
+    return "bun";
+  }
+
+  return "npm";
+}
+```
+
+Reference: `src/helpers/get-pkg-manager.ts:3-19`
+
+## Supported Package Managers
+
+### npm
+
+The default package manager. Used when no other package manager is detected.
+
+```bash
+npx create-nextjs-dapp my-dapp
+```
+
+Commands generated:
+- Install: `npm install`
+- Run dev: `npm run dev`
+
+### yarn
+
+Automatically detected when using `yarn create`.
+
+```bash
+yarn create nextjs-dapp my-dapp
+```
+
+Commands generated:
+- Install: `yarn`
+- Run dev: `yarn dev`
+
+### pnpm
+
+Automatically detected when using `pnpm create`.
+
+```bash
+pnpm create nextjs-dapp my-dapp
+```
+
+Commands generated:
+- Install: `pnpm install`
+- Run dev: `pnpm dev`
+
+### bun
+
+Automatically detected when using `bunx`.
+
+```bash
+bunx create-nextjs-dapp my-dapp
+```
+
+Commands generated:
+- Install: `bun install`
+- Run dev: `bun dev`
+
+## Override Flags
+
+You can override the auto-detected package manager using command-line flags:
+
+```bash
+# Force npm
+npx create-nextjs-dapp my-dapp --use-npm
+
+# Force yarn
+npx create-nextjs-dapp my-dapp --use-yarn
+
+# Force pnpm
+npx create-nextjs-dapp my-dapp --use-pnpm
+
+# Force bun
+npx create-nextjs-dapp my-dapp --use-bun
+```
+
+Reference: `src/cli/args.ts:76-83`
+
+## Installation Process
+
+When using the `--install` flag, the CLI runs the appropriate install command:
+
+```typescript
+export function install(
+  root: string,
+  packageManager: PackageManager
+): boolean {
+  const commands: Record<PackageManager, string> = {
+    npm: "npm install",
+    yarn: "yarn",
+    pnpm: "pnpm install",
+    bun: "bun install",
+  };
+
+  try {
+    execSync(commands[packageManager], {
+      cwd: root,
+      stdio: "pipe",
+    });
+    return true;
+  } catch {
+    return false;
+  }
+}
+```
+
+Reference: `src/helpers/install.ts:4-24`
+
+## Examples
+
+### Interactive with Auto-Detection
+
+```bash
+# Will detect npm
+npx create-nextjs-dapp
+
+# Will detect yarn
+yarn create nextjs-dapp
+
+# Will detect pnpm
+pnpm create nextjs-dapp
+
+# Will detect bun
+bunx create-nextjs-dapp
+```
+
+### Non-Interactive with Specific Manager
+
+```bash
+# Create with npm (override detection)
+pnpm create nextjs-dapp my-app --use-npm --yes
+
+# Create with pnpm and auto-install
+npx create-nextjs-dapp my-app --use-pnpm --install
+
+# Create with bun
+yarn create nextjs-dapp my-app --use-bun
+```
+
+### Complete Workflow
+
+```bash
+# Create project with yarn, initialize git, and install dependencies
+yarn create nextjs-dapp my-dapp --git --install
+
+# The CLI will:
+# 1. Detect yarn as the package manager
+# 2. Generate the project
+# 3. Initialize git repository
+# 4. Run 'yarn' to install dependencies
+# 5. Show next steps with 'yarn dev'
+```
+
+## Next Steps Commands
+
+The CLI generates appropriate next steps based on the package manager:
+
+```typescript
+export function getRunCommand(packageManager: PackageManager): string {
+  switch (packageManager) {
+    case "yarn":
+      return "yarn dev";
+    case "pnpm":
+      return "pnpm dev";
+    case "bun":
+      return "bun dev";
+    default:
+      return "npm run dev";
+  }
+}
+```
+
+Reference: `src/helpers/install.ts:26-37`

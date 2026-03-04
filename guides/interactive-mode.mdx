@@ -1,0 +1,197 @@
+---
+title: Interactive mode
+description: Step-by-step walkthrough of the interactive CLI prompts
+icon: terminal
+---
+
+The interactive mode provides a guided experience for creating your Next.js dApp. When you run `npx create-nextjs-dapp` without any flags, you'll be prompted to answer a series of questions.
+
+## How it works
+
+The CLI uses [@clack/prompts](https://www.npmjs.com/package/@clack/prompts) to provide a beautiful, user-friendly terminal interface. All prompts include validation, default values, and can be cancelled at any time with `Ctrl+C`.
+
+<Info>
+If you prefer to skip the prompts, use the `--yes` flag to accept all defaults or provide all options via [CLI flags](/guides/cli-options).
+</Info>
+
+## Prompt flow
+
+### 1. Project name
+
+The first prompt asks for your project name:
+
+```
+What is your project named?
+› my-dapp
+```
+
+**Features:**
+- Default value: `my-dapp`
+- Validates against npm naming rules (lowercase, no spaces, etc.)
+- Shows error if name is invalid
+
+**From the source code:**
+
+```typescript src/cli/prompts.ts
+const result = await p.text({
+  message: "What is your project named?",
+  placeholder: "my-dapp",
+  defaultValue: "my-dapp",
+  validate: (value) => {
+    if (!value) return "Project name is required";
+    const validation = validateNpmName(value);
+    if (!validation.valid) {
+      return validation.problems?.[0] || "Invalid project name";
+    }
+    return undefined;
+  },
+});
+```
+
+### 2. Blockchain selection
+
+Choose which blockchain you want to build on:
+
+```
+Which blockchain do you want to build on?
+› Ethereum (EVM) - Ethereum, Polygon, Base, Arbitrum, etc.
+  Solana - Solana blockchain
+```
+
+**Available options:**
+- **EVM**: Ethereum and EVM-compatible chains (Polygon, Base, Arbitrum, Optimism, etc.)
+- **Solana**: Solana blockchain
+
+**From the source code:**
+
+```typescript src/cli/prompts.ts
+const result = await p.select({
+  message: "Which blockchain do you want to build on?",
+  options: Object.entries(CHAINS).map(([value, { name, description }]) => ({
+    value: value as Chain,
+    label: name,
+    hint: description,
+  })),
+  initialValue: "evm" as Chain,
+});
+```
+
+### 3. Wallet provider
+
+Select your wallet connection provider (filtered based on your blockchain choice):
+
+**For EVM:**
+```
+Which wallet provider do you want to use?
+› RainbowKit - Best UX for connecting wallets (recommended)
+  ConnectKit - Beautiful, customizable wallet connection UI
+  Privy - Email, social, and wallet login with embedded wallets
+  Dynamic - Multi-chain auth with embedded wallets and onramps
+  Reown (AppKit) - WalletConnect's official SDK (formerly Web3Modal)
+  Thirdweb - Full-stack web3 development platform
+  GetPara (Capsule) - Embedded wallets with MPC key management
+```
+
+**For Solana:**
+```
+Which wallet provider do you want to use?
+› Solana Wallet Adapter - Standard Solana wallet connection (recommended)
+  Privy - Email, social, and wallet login
+  Dynamic - Multi-chain auth with embedded wallets
+  Reown (AppKit) - WalletConnect's official SDK
+  Thirdweb - Full-stack web3 development platform
+```
+
+<Note>
+Only providers compatible with your selected blockchain are shown. The CLI automatically filters the list.
+</Note>
+
+### 4. Conflict detection
+
+If a directory with your project name already exists and contains files, you'll see a warning:
+
+```
+⚠ Directory my-dapp contains files that could conflict:
+  package.json, README.md, src, and 2 more
+
+Would you like to overwrite these files?
+› No / Yes
+```
+
+**From the source code:**
+
+```typescript src/cli/prompts.ts
+if (existsSync(projectPath)) {
+  if (!isFolderEmpty(projectPath, projectName)) {
+    const conflicts = getConflictingFiles(projectPath);
+    
+    p.log.warn(
+      `Directory ${pc.yellow(projectName)} contains files that could conflict:\n` +
+      `  ${conflicts.slice(0, 5).join(", ")}${conflicts.length > 5 ? `, and ${conflicts.length - 5} more` : ""}`
+    );
+
+    const overwrite = await p.confirm({
+      message: "Would you like to overwrite these files?",
+      initialValue: false,
+    });
+  }
+}
+```
+
+## Tips for interactive mode
+
+<AccordionGroup>
+  <Accordion title="Use arrow keys to navigate">
+    In select prompts (blockchain and wallet provider), use the ↑ and ↓ arrow keys to move between options. Press Enter to confirm your selection.
+  </Accordion>
+
+  <Accordion title="Cancel at any time">
+    Press `Ctrl+C` at any prompt to cancel the operation. You'll see a friendly "See you next time!" message.
+  </Accordion>
+
+  <Accordion title="See descriptions before choosing">
+    Each option in the select prompts includes a hint/description shown on the right side. Read these to understand what each provider offers before making your choice.
+  </Accordion>
+
+  <Accordion title="Validation happens automatically">
+    Don't worry about invalid input - the CLI validates your project name against npm naming rules and will show an error if something is wrong.
+  </Accordion>
+
+  <Accordion title="Defaults are safe">
+    All prompts have sensible defaults:
+    - Project name: `my-dapp`
+    - Blockchain: `evm`
+    - Wallet: The first (recommended) option for your blockchain
+  </Accordion>
+</AccordionGroup>
+
+## Non-interactive mode
+
+If you're using the CLI in a CI/CD environment or prefer not to answer prompts, use the `--yes` flag:
+
+```bash
+npx create-nextjs-dapp --yes
+```
+
+This will:
+- Use `my-dapp` as the project name
+- Select `evm` as the blockchain
+- Use `rainbowkit` as the wallet provider
+- Exit with an error if the directory already exists
+
+<Card title="Need more control?" icon="flag" href="/guides/cli-options">
+  Learn about all available CLI flags to customize your project without prompts
+</Card>
+
+## What happens after prompts?
+
+Once you've answered all prompts, the CLI will:
+
+1. Create your project directory
+2. Copy the base Next.js template
+3. Add blockchain-specific code (EVM or Solana)
+4. Configure your chosen wallet provider
+5. Install dependencies (if you used `--install`)
+6. Initialize git (if you used `--git`)
+
+You'll see a success message with next steps to get started!
