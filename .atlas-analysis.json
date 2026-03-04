@@ -1,0 +1,92 @@
+{
+  "projectType": "cli-tool",
+  "projectName": "create-nextjs-dapp",
+  "projectDescription": "A CLI tool to scaffold Next.js dApps with your preferred wallet provider and blockchain",
+  "theme": "palm",
+  "primaryColor": "#848c8e",
+  "lightColor": "#11161e",
+  "darkColor": "#cfd0d2",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/interactive-mode",
+              "guides/cli-options",
+              "guides/project-structure",
+              "guides/wallet-providers"
+            ]
+          },
+          {
+            "group": "Wallet Providers",
+            "pages": [
+              "wallets/evm-wallets",
+              "wallets/solana-wallets",
+              "wallets/configuration"
+            ]
+          },
+          {
+            "group": "Advanced",
+            "pages": [
+              "advanced/package-managers",
+              "advanced/customization",
+              "advanced/troubleshooting"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "API Reference",
+        "groups": [
+          {
+            "group": "CLI Commands",
+            "pages": [
+              "api/create-command",
+              "api/command-options",
+              "api/flags-reference"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "Interactive CLI with beautiful prompts powered by @clack/prompts",
+    "Multi-blockchain support (EVM and Solana)",
+    "8 popular wallet providers pre-configured (RainbowKit, Privy, Dynamic, etc.)",
+    "TypeScript + Next.js 14+ with App Router",
+    "Tailwind CSS styling included",
+    "Ready-to-use contract/program interaction hooks",
+    "Automatic package manager detection (npm, yarn, pnpm, bun)",
+    "Git repository initialization option",
+    "Automatic dependency installation option",
+    "Update notifications for new CLI versions"
+  ],
+  "publicApiSurface": [
+    "npx create-nextjs-dapp [project-name]",
+    "--chain, -c <chain> - Select blockchain (evm, solana)",
+    "--wallet, -w <provider> - Select wallet provider",
+    "--yes, -y - Skip prompts and use defaults",
+    "--git - Initialize git repository",
+    "--install - Install dependencies after creation",
+    "--use-npm - Use npm as package manager",
+    "--use-yarn - Use yarn as package manager",
+    "--use-pnpm - Use pnpm as package manager",
+    "--use-bun - Use bun as package manager",
+    "--help, -h - Show help message",
+    "--version, -v - Show version number",
+    "EVM wallet providers: rainbowkit, connectkit, privy, dynamic, reown, thirdweb, getpara",
+    "Solana wallet providers: wallet-adapter, privy, dynamic, reown, thirdweb"
+  ]
+}
